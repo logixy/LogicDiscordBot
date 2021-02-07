@@ -71,6 +71,8 @@ class MyClient(discord.Client):
 					text += "**"+ s_name +"** - ("+ str(s_data['online']) + "/" + str(s_data['slots']) + ")" + "\n"
 				else:
 					text += "**"+s_name+"** - (**"+ s_data['status'].title() + "**)" + "\n"
+			text += "**Общий онлайн:** " + spisok['online'] + "/" + spisok['slots'] + "\n"
+			text += "**Рекорд:** " + spisok['record'] + " (" + spisok['timerec'] + ")"
 			await message.channel.send(text)
 
 client = MyClient()
