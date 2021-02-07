@@ -68,7 +68,7 @@ class MyClient(discord.Client):
 			for s_name in spisok['servers']:
 				s_data = spisok['servers'][s_name]
 				stat_e = ':green_circle:'
-				if (s_data['ping'] > 250):
+				if (s_data['ping'] > 300):
 					stat_e = ':yellow_circle:'
 				if (s_data['ping'] > 350):
 					stat_e = ':orange_circle:'
