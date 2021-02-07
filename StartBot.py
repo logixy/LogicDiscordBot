@@ -67,8 +67,16 @@ class MyClient(discord.Client):
 			text = "Статус игровых серверов:\n"
 			for s_name in spisok['servers']:
 				s_data = spisok['servers'][s_name]
+				stat_e = ':green_circle:'
+				if (s_data['ping'] > 250):
+					stat_e = ':yellow_circle:'
+				if (s_data['ping'] > 350):
+					stat_e = ':orange_circle:'
+				if (s_data['ping'] > 450):
+					stat_e = ':brown_circle:'
+					
 				if ( s_data['status'] == 'online' ):
-					text += ":green_circle:**"+ s_name +"** - ("+ str(s_data['online']) + "/" + str(s_data['slots']) + ")" + "\n"
+					text += ":green_circle:**"+ s_name +"** - ("+ str(s_data['online']) + "/" + str(s_data['slots']) + ") (" + str(s_data['ping']) + "ms)\n"
 				else:
 					text += ":red_circle:**"+s_name+"** - (**"+ s_data['status'].title() + "**)" + "\n"
 			text += "\n**Общий онлайн:** " + str(spisok['online']) + "/" + str(spisok['slots']) + "\n"
