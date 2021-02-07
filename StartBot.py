@@ -68,9 +68,9 @@ class MyClient(discord.Client):
 			for s_name in spisok['servers']:
 				s_data = spisok['servers'][s_name]
 				if ( s_data['status'] == 'online' ):
-					text += "**"+ s_name +"** - ("+ str(s_data['online']) + "/" + str(s_data['slots']) + ")" + "\n"
+					text += ":green_circle:**"+ s_name +"** - ("+ str(s_data['online']) + "/" + str(s_data['slots']) + ")" + "\n"
 				else:
-					text += "**"+s_name+"** - (**"+ s_data['status'].title() + "**)" + "\n"
+					text += ":red_circle:**"+s_name+"** - (**"+ s_data['status'].title() + "**)" + "\n"
 			text += "\n**Общий онлайн:** " + str(spisok['online']) + "/" + str(spisok['slots']) + "\n"
 			text += "**Рекорд дня:** " + str(spisok['recordday']) + " (" + spisok['timerecday'] + ")\n"
 			text += "**Рекорд:** " + str(spisok['record']) + " (" + spisok['timerec'] + ")\n"
