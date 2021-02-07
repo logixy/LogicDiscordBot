@@ -34,6 +34,9 @@ class MyClient(discord.Client):
 			await message.channel.send('Буп')
 				
 		if message.content == 'смени аву плз':
+			if(message.guild == None):
+				await message.channel.send('Данную команду можно использовать только на сервере!')
+				return;
 			await message.channel.send('Окей..')
 			mpi.generateIcon()
 			server = discord.Client.get_guild(self, id=message.guild.id)
