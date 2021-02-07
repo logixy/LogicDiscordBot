@@ -1,3 +1,4 @@
 [submodule "ProjectEverydayLogo"]
 	path = ProjectEverydayLogo
 	url = https://github.com/LogicWorlds/ProjectEverydayLogo
+	branch = master
