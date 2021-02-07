@@ -76,7 +76,7 @@ class MyClient(discord.Client):
 					stat_e = ':brown_circle:'
 					
 				if ( s_data['status'] == 'online' ):
-					text += ":green_circle:**"+ s_name +"** - ("+ str(s_data['online']) + "/" + str(s_data['slots']) + ") (" + str(s_data['ping']) + "ms)\n"
+					text += stat_e+"**"+ s_name +"** - ("+ str(s_data['online']) + "/" + str(s_data['slots']) + ") (" + str(s_data['ping']) + "ms)\n"
 				else:
 					text += ":red_circle:**"+s_name+"** - (**"+ s_data['status'].title() + "**)" + "\n"
 			text += "\n**Общий онлайн:** " + str(spisok['online']) + "/" + str(spisok['slots']) + "\n"
