@@ -1,9 +1,11 @@
 import discord, requests, json
+from requests.exceptions import Timeout
 from discord.ext import tasks, commands
 import config as conf
 from ProjectEverydayLogo import MakePerfect as mpi
 		
 class MyClient(discord.Client):
+	req_error = ''
 	async def on_ready(self):
 		print('Logged on as', self.user)
 		print('Uid:',self.user.id)
@@ -11,8 +13,9 @@ class MyClient(discord.Client):
 	def get_from(self, url):
 		headers = {'X-Requested-With': 'XMLHttpRequest', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0'}
 		try:
-			req = requests.get(url, headers=headers, timeout=15)
+			req = requests.get(url, headers=headers, timeout=8)
 		except Timeout:
+			self.req_error = 'Превышено время ожидания :cold_face:'
 			return False
 		else:
 			return json.loads(req.text)
@@ -53,20 +56,20 @@ class MyClient(discord.Client):
 		if message.content == 'шуткани':
 			req = self.get_from('https://randstuff.ru/joke/generate/')
 			if(req == False):
-				await message.channel.send('Ошибка соединения с API')
+				await message.channel.send('Ошибка соединения с API: '+self.req_error)
 				return
 			await message.channel.send(req['joke']['text'])
 		if message.content == 'факт':
 			req = self.get_from('https://randstuff.ru/fact/generate/')
 			if(req == False):
-				await message.channel.send('Ошибка соединения с API')
+				await message.channel.send('Ошибка соединения с API: '+self.req_error)
 				return
 			await message.channel.send(req['fact']['text'])
 		if message.content == 'топ голосующих':
 			positions = ['Первое место', 'Второе место', 'Третье место', 'Четвёртое место', 'Пятое место']
 			spisok = self.get_from('https://logicworld.ru/launcher/tableTopVote.php?mode=api')
 			if(spisok == False):
-				await message.channel.send('Ошибка соединения с API')
+				await message.channel.send('Ошибка соединения с API: '+self.req_error)
 				return
 			text = "На текущий момент топ голосующих такой:\n"
 			i = 0
@@ -81,7 +84,7 @@ class MyClient(discord.Client):
 		if message.content == 'статус серверов':
 			spisok = self.get_from('https://logicworld.ru/monAJAX/ajax.php')
 			if(spisok == False):
-				await message.channel.send('Ошибка соединения с API')
+				await message.channel.send('Ошибка соединения с API: '+self.req_error)
 				return
 			text = "Статус игровых серверов:\n"
 			for s_name in spisok['servers']:
