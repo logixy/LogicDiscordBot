@@ -10,7 +10,8 @@ class MyClient(discord.Client):
 		
 	def get_from(self, url):
 		headers = {'X-Requested-With': 'XMLHttpRequest', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0'}
-		return json.loads(requests.get(url, headers=headers).text)
+		req = requests.get(url, headers=headers, timeout=3).text
+		return json.loads(req)
 	
 	async def on_message(self, message):
         # don't respond to ourselves
@@ -67,18 +68,18 @@ class MyClient(discord.Client):
 			text = "Статус игровых серверов:\n"
 			for s_name in spisok['servers']:
 				s_data = spisok['servers'][s_name]
-				stat_e = ':green_circle:'
-				if (s_data['ping'] > 300):
-					stat_e = ':yellow_circle:'
-				if (s_data['ping'] > 350):
-					stat_e = ':orange_circle:'
-				if (s_data['ping'] > 450):
-					stat_e = ':brown_circle:'
 					
 				if ( s_data['status'] == 'online' ):
+					stat_e = ':green_circle:'
+					if (s_data['ping'] > 300):
+						stat_e = ':yellow_circle:'
+					if (s_data['ping'] > 350):
+						stat_e = ':orange_circle:'
+					if (s_data['ping'] > 450):
+						stat_e = ':brown_circle:'
 					text += stat_e+"**"+ s_name +"** - ("+ str(s_data['online']) + "/" + str(s_data['slots']) + ") (" + str(s_data['ping']) + "ms)\n"
 				else:
-					text += ":red_circle:**"+s_name+"** - (**"+ s_data['status'].title() + "**)" + "\n"
+					text += ":red_circle:**"+s_name+"** - (**"+ s_data['status'] + "**)" + "\n"
 			text += "\n**Общий онлайн:** " + str(spisok['online']) + "/" + str(spisok['slots']) + "\n"
 			text += "**Рекорд дня:** " + str(spisok['recordday']) + " (" + spisok['timerecday'] + ")\n"
 			text += "**Рекорд:** " + str(spisok['record']) + " (" + spisok['timerec'] + ")\n"
