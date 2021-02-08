@@ -12,12 +12,7 @@ class MyClient(discord.Client):
 		headers = {'X-Requested-With': 'XMLHttpRequest', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0'}
 		req = requests.get(url, headers=headers, timeout=3)
 		try:
-			i = 1
-			while not (req.ok) or (i < 3):
-				i += 1
-				req = requests.get(url, headers=headers, timeout=4)
-			if not (req.ok):
-				return False
+			req = requests.get(url, headers=headers, timeout=15)
 		except Timeout:
 			return False
 		else:
