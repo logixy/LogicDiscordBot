@@ -11,13 +11,17 @@ class MyClient(discord.Client):
 	def get_from(self, url):
 		headers = {'X-Requested-With': 'XMLHttpRequest', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0'}
 		req = requests.get(url, headers=headers, timeout=3)
-		i = 1
-		while not (req.ok) or (i < 3):
-			i += 1
-			req = requests.get(url, headers=headers, timeout=4)
-		if not (req.ok):
+		try:
+			i = 1
+			while not (req.ok) or (i < 3):
+				i += 1
+				req = requests.get(url, headers=headers, timeout=4)
+			if not (req.ok):
+				return False
+		except Timeout:
 			return False
-		return json.loads(req.text)
+		else:
+			return json.loads(req.text)
 	
 	async def on_message(self, message):
         # don't respond to ourselves
