@@ -105,6 +105,13 @@ class MyClient(discord.Client):
 			text += "**Рекорд дня:** " + str(spisok['recordday']) + " (" + spisok['timerecday'] + ")\n"
 			text += "**Рекорд:** " + str(spisok['record']) + " (" + spisok['timerec'] + ")\n"
 			await message.channel.send(text)
+		if message.content == 'кто я?':
+			req = self.get_from('http://free-generator.ru/generator.php?action=word&type=2')
+			if(req == False):
+				await message.channel.send('Ошибка соединения с API: '+self.req_error)
+				return
+			
+			await message.channel.send("<@"+str(message.author.id) + ">, ты " + req['word']['word'] + ".")
 
 client = MyClient()
 client.run(conf.bot_token)
