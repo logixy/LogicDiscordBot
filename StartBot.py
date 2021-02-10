@@ -41,7 +41,7 @@ class MyClient(discord.Client):
 			await message.channel.send(text)
 			
 		if message.content in ['бип', 'боп', 'буп']:
-			await message.channel.send(andom.choice(['Бип', 'Боп', 'Буп']))
+			await message.channel.send(random.choice(['Бип', 'Боп', 'Буп']))
 				
 		if message.content in ['смени аву плз', 'сменить аватар сервера', 'смени иконку сервера', 'смени иконку плз']:
 			if(message.guild == None):
