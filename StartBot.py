@@ -48,7 +48,9 @@ class MyClient(discord.Client):
 			if(message.guild == None):
 				await message.channel.send('Данную команду можно использовать только на сервере!')
 				return;
-			await message.channel.send('Принято! Передаю вашу заявку нашему художнику...')
+			m2 = ['Передаю вашу заявку нашему художнику...', 'Снижаем ЗП дизайнера...', 'Вызываем омон в дом художника...',\
+			'Вежливо уговариваем художника...', 'Под пытками заставляем нашего дизайнера...']
+			await message.channel.send('Принято! ' + random.choice(m2))
 			mpi.generateIcon()
 			server = discord.Client.get_guild(self, id=message.guild.id)
 			
