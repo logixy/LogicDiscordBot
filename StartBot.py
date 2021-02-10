@@ -1,4 +1,4 @@
-import discord, requests, json
+import discord, requests, json, random
 from requests.exceptions import Timeout
 from discord.ext import tasks, commands
 import config as conf
@@ -36,7 +36,8 @@ class MyClient(discord.Client):
 			'`Факт` - Случайный факт\n' + \
 			'`Топ голосующих` - Вывести топ голосующих на текущий момент\n' + \
 			'`Статус серверов` - Узнать статус игровых серверов\n' + \
-			'`Кто я?` - Узнать кто ты есть на самом деле\n'
+			'`Кто я?` - Узнать кто ты есть на самом деле\n' + \
+			'`Получится?` - Перед тем как что-то сделать спроси, а получится ли у тебя?\n'
 			await message.channel.send(text)
 			
 		if message.content == 'бип':
@@ -113,6 +114,18 @@ class MyClient(discord.Client):
 				return
 			
 			await message.channel.send("<@"+str(message.author.id) + ">, ты " + req['word']['word'] + ".")
+		if message.content == 'получится?':
+			answ8 = ['Бесспорно', 'Предрешено', 'Никаких сомнений', 'Определённо да',\
+			'Можешь быть уверен в этом', 'Мне кажется — «да»', 'Вероятнее всего',\
+			'Хорошие перспективы', 'Знаки говорят — «да»', 'Да',\
+			'Пока не ясно, попробуй снова', 'Спроси позже', 'Лучше не рассказывать',\
+			'Сейчас нельзя предсказать', 'Сконцентрируйся и спроси опять',\
+			'Даже не думай', 'Мой ответ — «нет»', 'По моим данным — «нет»',\
+			'Перспективы не очень хорошие', 'Весьма сомнительно']
+			emojies = [':smiling_face_with_3_hearts:', ':sweat_smile:', ':sunglasses:',\
+			':upside_down:', ':point_up:', ':thinking:', ':woman_shrugging:', ':face_with_raised_eyebrow:',\
+			':eyes:', ':woman_gesturing_no:', ':dancer:', ':no_mouth:']
+			await message.channel.send("<@"+str(message.author.id) + ">, " + random.choice(answ8) + " " + andom.choice(emojies))
 
 client = MyClient()
 client.run(conf.bot_token)
