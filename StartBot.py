@@ -43,7 +43,7 @@ class MyClient(discord.Client):
 		if message.content in ['бип', 'боп', 'буп']:
 			await message.channel.send(random.choice(['Бип', 'Боп', 'Буп']))
 				
-		if message.content in ['смени аву плз', 'сменить аватар сервера', 'смени иконку сервера', 'смени иконку плз']:
+		if message.content in ['смени аву плз', 'смени аватар сервера', 'смени иконку сервера', 'смени иконку плз']:
 			if(message.guild == None):
 				await message.channel.send('Данную команду можно использовать только на сервере!')
 				return;
@@ -67,7 +67,7 @@ class MyClient(discord.Client):
 				await message.channel.send('Ошибка соединения с API: '+self.req_error)
 				return
 			await message.channel.send(req['fact']['text'])
-		if message.content == ['топ голосующих', 'топ голосов', 'топ голосовавших']:
+		if message.content in ['топ голосующих', 'топ голосов', 'топ голосовавших']:
 			positions = ['Первое место', 'Второе место', 'Третье место', 'Четвёртое место', 'Пятое место']
 			spisok = self.get_from('https://logicworld.ru/launcher/tableTopVote.php?mode=api')
 			if(spisok == False):
