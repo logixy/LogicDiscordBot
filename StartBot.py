@@ -125,7 +125,7 @@ class MyClient(discord.Client):
 			emojies = [':smiling_face_with_3_hearts:', ':sweat_smile:', ':sunglasses:',\
 			':upside_down:', ':point_up:', ':thinking:', ':woman_shrugging:', ':face_with_raised_eyebrow:',\
 			':eyes:', ':woman_gesturing_no:', ':dancer:', ':no_mouth:']
-			await message.channel.send("<@"+str(message.author.id) + ">, " + random.choice(answ8) + " " + andom.choice(emojies))
+			await message.channel.send("<@"+str(message.author.id) + ">, " + random.choice(answ8) + " " + random.choice(emojies))
 
 client = MyClient()
 client.run(conf.bot_token)
