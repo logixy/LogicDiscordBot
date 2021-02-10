@@ -40,21 +40,21 @@ class MyClient(discord.Client):
 			'`Получится?` - Перед тем как что-то сделать спроси, а получится ли у тебя?\n'
 			await message.channel.send(text)
 			
-		if message.content == 'бип':
-			await message.channel.send('Буп')
+		if message.content in ['бип', 'боп', 'буп']:
+			await message.channel.send(andom.choice(['Бип', 'Боп', 'Буп']))
 				
-		if message.content == 'смени аву плз':
+		if message.content in ['смени аву плз', 'сменить аватар сервера', 'смени иконку сервера', 'смени иконку плз']:
 			if(message.guild == None):
 				await message.channel.send('Данную команду можно использовать только на сервере!')
 				return;
-			await message.channel.send('Окей..')
+			await message.channel.send('Принято! Передаю вашу заявку нашему художнику...')
 			mpi.generateIcon()
 			server = discord.Client.get_guild(self, id=message.guild.id)
 			
 			with open('ProjectEverydayLogo/out/out.png', 'rb') as f:
 				icon = f.read()
 			await server.edit(icon=icon)
-			await message.channel.send('Нати.')
+			await message.channel.send('Готово!')
 		if message.content == 'шуткани':
 			req = self.get_from('https://randstuff.ru/joke/generate/')
 			if(req == False):
@@ -67,7 +67,7 @@ class MyClient(discord.Client):
 				await message.channel.send('Ошибка соединения с API: '+self.req_error)
 				return
 			await message.channel.send(req['fact']['text'])
-		if message.content == 'топ голосующих':
+		if message.content == ['топ голосующих', 'топ голосов', 'топ голосовавших']:
 			positions = ['Первое место', 'Второе место', 'Третье место', 'Четвёртое место', 'Пятое место']
 			spisok = self.get_from('https://logicworld.ru/launcher/tableTopVote.php?mode=api')
 			if(spisok == False):
@@ -83,7 +83,7 @@ class MyClient(discord.Client):
 					text += str(i+1) + static_text
 				i += 1
 			await message.channel.send(text)
-		if message.content == 'статус серверов':
+		if message.content in ['статус серверов', 'статус сервера', 'server stat', 'статистика сервера']:
 			spisok = self.get_from('https://logicworld.ru/monAJAX/ajax.php')
 			if(spisok == False):
 				await message.channel.send('Ошибка соединения с API: '+self.req_error)
@@ -107,14 +107,14 @@ class MyClient(discord.Client):
 			text += "**Рекорд дня:** " + str(spisok['recordday']) + " (" + spisok['timerecday'] + ")\n"
 			text += "**Рекорд:** " + str(spisok['record']) + " (" + spisok['timerec'] + ")\n"
 			await message.channel.send(text)
-		if message.content == 'кто я?':
+		if message.content in ['кто я?', 'кто я есть?', 'кто же я?']:
 			req = self.get_from('http://free-generator.ru/generator.php?action=word&type=2')
 			if(req == False):
 				await message.channel.send('Ошибка соединения с API: '+self.req_error)
 				return
 			
 			await message.channel.send("<@"+str(message.author.id) + ">, ты " + req['word']['word'] + ".")
-		if message.content == 'получится?':
+		if message.content in ['получится?', 'получилось?', 'вышло?', 'выйдет?']:
 			answ8 = ['Бесспорно', 'Предрешено', 'Никаких сомнений', 'Определённо да',\
 			'Можешь быть уверен в этом', 'Мне кажется — «да»', 'Вероятнее всего',\
 			'Хорошие перспективы', 'Знаки говорят — «да»', 'Да',\
