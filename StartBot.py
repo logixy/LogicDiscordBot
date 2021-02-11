@@ -30,15 +30,28 @@ class MyClient(discord.Client):
 		if(message.content == '<@!'+str(self.user.id)+'>'):
 			text = 'Что Вам необходимо?\n ' + \
 			'**Доступные команды на данный момент:** \n' + \
+			'<@!'+str(self.user.id)+'> - Вызвать данную подсказку\n' + \
 			'`Cмени аву плз` - Смена аватара сервера на случайно сгенерированный\n' + \
 			'`Бип` - Послать ботов\n' + \
+			'    Алисы: `боп`, `буп`\n' + \
 			'`Шуткани` -  Случайная шутка\n' + \
+			'    Алисы: `пошути`, `анекдот`\n' + \
 			'`Факт` - Случайный факт\n' + \
+			'    Алисы: `истина`\n' + \
 			'`Топ голосующих` - Вывести топ голосующих на текущий момент\n' + \
+			'    Алисы: `топ голосов`, `топ голосовавших`\n' + \
 			'`Статус серверов` - Узнать статус игровых серверов\n' + \
+			'    Алисы: `статус сервера`, `server stat`, `статистика сервера`\n' + \
 			'`Кто я?` - Узнать кто ты есть на самом деле\n' + \
+			'    Алисы: `кто я есть?`, `кто же я?`, `ну кто же я?`, `божечки, что я такое?!`\n' + \
 			'`Получится?` - Перед тем как что-то сделать спроси, а получится ли у тебя?\n' + \
-			'`Пинг` - Понг!\n'
+			'    Алисы: `получилось?`, `вышло?`, `выйдет?`\n' + \
+			'`Пинг` - Понг!\n' + \
+			'    Алисы: `ping`, `пинг!`, `ping!`\n' + \
+			'`Смени мне никнейм` - Если вы хотите получить новую личность в нашем самопровозглашенном государстве\n' + \
+			'    Алисы: `смени мне ник`, `смени мой ник`, `измени мой ник`\n' + \
+			'`Cбрось мой ник` - Вернутся к прошлой жизни и забыть все невзгоды.\n' + \
+			'    Алисы: `сбрось мне ник`, `скинь мой ник`\n'
 			await message.channel.send(text)
 			
 		if message.content in ['бип', 'боп', 'буп']:
@@ -58,13 +71,13 @@ class MyClient(discord.Client):
 				icon = f.read()
 			await server.edit(icon=icon)
 			await message.channel.send('Готово!')
-		if message.content == 'шуткани':
+		if message.content in ['шуткани', 'пошути', 'анекдот']:
 			req = self.get_from('https://randstuff.ru/joke/generate/')
 			if(req == False):
 				await message.channel.send('Ошибка соединения с API: '+self.req_error)
 				return
 			await message.channel.send(req['joke']['text'])
-		if message.content == 'факт':
+		if message.content in ['факт', 'истина']:
 			req = self.get_from('https://randstuff.ru/fact/generate/')
 			if(req == False):
 				await message.channel.send('Ошибка соединения с API: '+self.req_error)
@@ -110,7 +123,7 @@ class MyClient(discord.Client):
 			text += "**Рекорд дня:** " + str(spisok['recordday']) + " (" + spisok['timerecday'] + ")\n"
 			text += "**Рекорд:** " + str(spisok['record']) + " (" + spisok['timerec'] + ")\n"
 			await message.channel.send(text)
-		if message.content in ['кто я?', 'кто я есть?', 'кто же я?']:
+		if message.content in ['кто я?', 'кто я есть?', 'кто же я?', 'ну кто же я?', 'божечки, что я такое?!']:
 			req = self.get_from('http://free-generator.ru/generator.php?action=word&type=2')
 			if(req == False):
 				await message.channel.send('Ошибка соединения с API: '+self.req_error)
@@ -131,6 +144,30 @@ class MyClient(discord.Client):
 			await message.channel.send("<@"+str(message.author.id) + ">, " + random.choice(answ8).lower() + " " + random.choice(emojies))
 		if message.content in ['пинг', 'ping', 'пинг!', 'ping!']:
 			await message.channel.send('Понг!')
+		if message.content in ['смени мне никнейм', 'смени мне ник', 'смени мой ник', 'измени мой ник']:
+			await message.channel.send('Печатаем новый паспорт...')
+			req = self.get_from('http://free-generator.ru/generator.php?action=word&type=2')
+			if(req == False):
+				await message.channel.send('Ошибка соединения с API: '+self.req_error)
+				return
+			req2 = self.get_from('http://free-generator.ru/generator.php?action=word&type=1')
+			if(req2 == False):
+				await message.channel.send('Ошибка соединения с API: '+self.req_error)
+				return
+			newNick = req['word']['word'].title() + " " + req2['word']['word'].title();
+			try:
+				await message.author.edit(nick=newNick)
+			except:
+				await message.channel.send('Службы свыше запретили нам вмешиватся.')
+			else:
+				await message.channel.send('Добро пожаловать, **' + newNick + "**, которого мы никогда не видели :face_with_hand_over_mouth:")
+		if message.content in ['сбрось мой ник', 'сбрось мне ник', 'скинь мой ник']:
+			try:
+				await message.author.edit(nick=None)
+			except:
+				await message.channel.send('Службы свыше запретили нам вмешиватся.')
+			else:
+				await message.channel.send('Мы раскрыли вашу истенную сущность.')
 
 client = MyClient()
 client.run(conf.bot_token)
