@@ -145,6 +145,9 @@ class MyClient(discord.Client):
 		if message.content in ['пинг', 'ping', 'пинг!', 'ping!']:
 			await message.channel.send('Понг!')
 		if message.content in ['смени мне никнейм', 'смени мне ник', 'смени мой ник', 'измени мой ник']:
+			if(message.guild == None):
+				await message.channel.send('Данную команду можно использовать только на сервере!')
+				return;
 			await message.channel.send('Печатаем новый паспорт...')
 			req = self.get_from('http://free-generator.ru/generator.php?action=word&type=2')
 			if(req == False):
@@ -162,6 +165,9 @@ class MyClient(discord.Client):
 			else:
 				await message.channel.send('Добро пожаловать, **' + newNick + "**, которого мы никогда не видели :face_with_hand_over_mouth:")
 		if message.content in ['сбрось мой ник', 'сбрось мне ник', 'скинь мой ник']:
+			if(message.guild == None):
+				await message.channel.send('Данную команду можно использовать только на сервере!')
+				return;
 			try:
 				await message.author.edit(nick=None)
 			except:
