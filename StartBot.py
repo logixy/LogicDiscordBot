@@ -20,13 +20,13 @@ class MyClient(discord.Client):
 		else:
 			return json.loads(req.text)
 	
-	def gen_rand_word(type): #type 2 - adjective (прилагать.) 1 - noun (сущ.)
+	def gen_rand_word(self, type): #type 2 - adjective (прилагать.) 1 - noun (сущ.)
 		req = self.get_from('http://free-generator.ru/generator.php?action=word&type='+str(type))
-			if(req == False):
-				await message.channel.send('Ошибка соединения с API: '+self.req_error)
-				return
-			
-			return req['word']['word']
+		if(req == False):
+			message.channel.send('Ошибка соединения с API: '+self.req_error)
+			return
+		
+		return req['word']['word']
 	
 	async def on_message(self, message):
         # don't respond to ourselves
@@ -133,9 +133,9 @@ class MyClient(discord.Client):
 			text += "**Рекорд:** " + str(spisok['record']) + " (" + spisok['timerec'] + ")\n"
 			await message.channel.send(text)
 		if message.content in ['кто я?', 'кто я есть?', 'кто же я?', 'ну кто же я?', 'божечки, что я такое?!']:			
-			await message.channel.send("<@"+str(message.author.id) + ">, ты " + gen_rand_word(2) + ".")
+			await message.channel.send("<@"+str(message.author.id) + ">, ты " + self.gen_rand_word(2) + ".")
 		if message.content in ['кто ты?', 'кто он?', 'кто же он?', 'кто же ты?']:			
-			await message.channel.send("<@"+str(message.author.id) + ">, я думаю он " + gen_rand_word(2) + ".")
+			await message.channel.send("<@"+str(message.author.id) + ">, я думаю он " + self.gen_rand_word(2) + ".")
 		if message.content in ['получится?', 'получилось?', 'вышло?', 'выйдет?']:
 			answ8 = ['Бесспорно', 'Предрешено', 'Никаких сомнений', 'Определённо да',\
 			'Можешь быть уверен в этом', 'Мне кажется — «да»', 'Вероятнее всего',\
