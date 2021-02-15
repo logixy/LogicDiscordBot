@@ -105,7 +105,7 @@ class MyClient(discord.Client):
 			text = "На текущий момент топ голосующих такой:\n"
 			i = 0
 			for userdata in spisok:
-				static_text = " - **" + userdata['user'].title() + "** Счёт - **" + userdata['ammount'] + "** Доп. голоса - **" + userdata['cheatAmmount'] + "**\n"
+				static_text = " - **" + userdata['user'].replace('_', '\\_').title() + "** Счёт - **" + userdata['ammount'] + "** Доп. голоса - **" + userdata['cheatAmmount'] + "**\n"
 				if i < len(positions):
 					text += positions[i] + static_text
 				else:
