@@ -173,7 +173,10 @@ class MyClient(discord.Client):
 			except:
 				await message.channel.send('Службы свыше запретили нам вмешиватся.')
 			else:
-				await message.channel.send('Добро пожаловать, **' + newNick + "**, которого мы никогда не видели :face_with_hand_over_mouth:")
+				profession = requests.post('https://randomall.ru/api/general/jobs')
+				msg = 'Добро пожаловать, **' + newNick + '**, которого мы никогда не видели :face_with_hand_over_mouth:\n' + \
+				'Вы '+profession
+				await message.channel.send(msg)
 		if message.content in ['сбрось мой ник', 'сбрось мне ник', 'скинь мой ник']:
 			if(message.guild == None):
 				await message.channel.send('Данную команду можно использовать только на сервере!')
