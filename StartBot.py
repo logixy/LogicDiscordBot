@@ -173,7 +173,7 @@ class MyClient(discord.Client):
 			except:
 				await message.channel.send('Службы свыше запретили нам вмешиватся.')
 			else:
-				profession = requests.post('https://randomall.ru/api/general/jobs')
+				profession = requests.post('https://randomall.ru/api/general/jobs').text
 				msg = 'Добро пожаловать, **' + newNick + '**, которого мы никогда не видели :face_with_hand_over_mouth:\n' + \
 				'Вы '+profession
 				await message.channel.send(msg)
