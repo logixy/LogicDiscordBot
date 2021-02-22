@@ -97,7 +97,6 @@ class MyClient(discord.Client):
 				return
 			await message.channel.send(req['fact']['text'])
 		if message.content in ['топ голосующих', 'топ голосов', 'топ голосовавших']:
-			positions = ['Первое место', 'Второе место', 'Третье место', 'Четвёртое место', 'Пятое место']
 			spisok = self.get_from('https://logicworld.ru/launcher/tableTopVote.php?mode=api')
 			if(spisok == False):
 				await message.channel.send('Ошибка соединения с API: '+self.req_error)
@@ -106,10 +105,7 @@ class MyClient(discord.Client):
 			i = 0
 			for userdata in spisok:
 				static_text = " - **" + userdata['user'].replace('_', '\\_').title() + "** Счёт - **" + userdata['ammount'] + "** Доп. голоса - **" + userdata['cheatAmmount'] + "**\n"
-				if i < len(positions):
-					text += positions[i] + static_text
-				else:
-					text += str(i+1) + static_text
+				text += str(i+1) + static_text
 				i += 1
 			await message.channel.send(text)
 		if message.content in ['статус серверов', 'статус сервера', 'server stat', 'статистика сервера']:
