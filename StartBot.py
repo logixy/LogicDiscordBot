@@ -64,11 +64,13 @@ class MyClient(discord.Client):
 			'`Cбрось мой ник` - Вернутся к прошлой жизни и забыть все невзгоды.\n' + \
 			'    Алисы: `сбрось мне ник`, `скинь мой ник`\n' + \
 			'`Задай тему разговора` -  Вам не о чем поболтать? Попросите подсказать тему. у бота.\n' + \
-			'    Алисы: `давай новую тему разговора`\n'
-			await message.channel.send(text)
+			'    Алисы: `давай новую тему разговора`\n' + \
+			'`Где я?` - Если вы вдруг потерялись, можете спросить прохожего бота для уточнения своего местоположения.\n' + \
+			'    Алисы: `где я оказался?`, `где же я?`, `где я нахожусь?`, `где я сейчас?`, `где я сейчас нахожусь?`\n'
+			await message.reply(text)
 			
 		if message.content in ['бип', 'боп', 'буп']:
-			await message.channel.send(random.choice(['Бип', 'Боп', 'Буп']))
+			await message.reply(random.choice(['Бип', 'Боп', 'Буп']))
 				
 		if message.content in ['смени аву плз', 'смени аватар сервера', 'смени иконку сервера', 'смени иконку плз']:
 			if(message.guild == None):
@@ -76,30 +78,30 @@ class MyClient(discord.Client):
 				return;
 			m2 = ['Передаю вашу заявку нашему художнику...', 'Снижаем ЗП дизайнера...', 'Вызываем омон в дом художника...',\
 			'Вежливо уговариваем художника...', 'Под пытками заставляем нашего дизайнера...']
-			await message.channel.send('Принято! ' + random.choice(m2))
+			await message.reply('Принято! ' + random.choice(m2))
 			mpi.generateIcon()
 			server = discord.Client.get_guild(self, id=message.guild.id)
 			
 			with open('ProjectEverydayLogo/out/out.png', 'rb') as f:
 				icon = f.read()
 			await server.edit(icon=icon)
-			await message.channel.send('Готово!')
+			await message.reply('Готово!')
 		if message.content in ['шуткани', 'пошути', 'анекдот']:
 			req = self.get_from('https://randstuff.ru/joke/generate/')
 			if(req == False):
-				await message.channel.send('Ошибка соединения с API: '+self.req_error)
+				await message.reply('Ошибка соединения с API: '+self.req_error)
 				return
 			await message.channel.send(req['joke']['text'])
 		if message.content in ['факт', 'истина']:
 			req = self.get_from('https://randstuff.ru/fact/generate/')
 			if(req == False):
-				await message.channel.send('Ошибка соединения с API: '+self.req_error)
+				await message.reply('Ошибка соединения с API: '+self.req_error)
 				return
 			await message.channel.send(req['fact']['text'])
 		if message.content in ['топ голосующих', 'топ голосов', 'топ голосовавших']:
 			spisok = self.get_from('https://logicworld.ru/launcher/tableTopVote.php?mode=api')
 			if(spisok == False):
-				await message.channel.send('Ошибка соединения с API: '+self.req_error)
+				await message.reply('Ошибка соединения с API: '+self.req_error)
 				return
 			text = "На текущий момент топ голосующих такой:\n"
 			i = 0
@@ -107,11 +109,11 @@ class MyClient(discord.Client):
 				static_text = " - **" + userdata['user'].replace('_', '\\_').title() + "** Счёт - **" + userdata['ammount'] + "** Доп. голоса - **" + userdata['cheatAmmount'] + "**\n"
 				text += str(i+1) + static_text
 				i += 1
-			await message.channel.send(text)
+			await message.reply(text)
 		if message.content in ['статус серверов', 'статус сервера', 'server stat', 'статистика сервера']:
 			spisok = self.get_from('https://logicworld.ru/monAJAX/ajax.php')
 			if(spisok == False):
-				await message.channel.send('Ошибка соединения с API: '+self.req_error)
+				await message.reply('Ошибка соединения с API: '+self.req_error)
 				return
 			text = "Статус игровых серверов:\n"
 			for s_name in spisok['servers']:
@@ -131,11 +133,14 @@ class MyClient(discord.Client):
 			text += "\n**Общий онлайн:** " + str(spisok['online']) + "/" + str(spisok['slots']) + "\n"
 			text += "**Рекорд дня:** " + str(spisok['recordday']) + " (" + spisok['timerecday'] + ")\n"
 			text += "**Рекорд:** " + str(spisok['record']) + " (" + spisok['timerec'] + ")\n"
-			await message.channel.send(text)
+			await message.reply(text)
 		if message.content in ['кто я?', 'кто я есть?', 'кто же я?', 'ну кто же я?', 'божечки, что я такое?!']:			
-			await message.channel.send("<@"+str(message.author.id) + ">, ты " + self.gen_rand_word(2) + ".")
+			await message.reply("Ты " + self.gen_rand_word(2) + ".")
 		if message.content in ['кто ты?', 'кто он?', 'кто же он?', 'кто же ты?']:			
-			await message.channel.send("<@"+str(message.author.id) + ">, я думаю он " + self.gen_rand_word(2) + ".")
+			await message.reply("Я думаю он " + self.gen_rand_word(2) + ".")
+		if message.content in ['где я?', 'где я оказался?', 'где же я?', 'где я нахожусь?', 'где я сейчас?', 'где я сейчас нахожусь?']:			
+			req = self.get_from('https://randstuff.ru/city/generate/')
+			await message.reply("Ты в городе " + req['city']['city'] + " ("+req['city']['country']+").")
 		if message.content in ['получится?', 'получилось?', 'вышло?', 'выйдет?']:
 			answ8 = ['Бесспорно', 'Предрешено', 'Никаких сомнений', 'Определённо да',\
 			'Можешь быть уверен в этом', 'Мне кажется — «да»', 'Вероятнее всего',\
@@ -147,9 +152,9 @@ class MyClient(discord.Client):
 			emojies = [':smiling_face_with_3_hearts:', ':sweat_smile:', ':sunglasses:',\
 			':upside_down:', ':point_up:', ':thinking:', ':woman_shrugging:', ':face_with_raised_eyebrow:',\
 			':eyes:', ':woman_gesturing_no:', ':dancer:', ':no_mouth:']
-			await message.channel.send("<@"+str(message.author.id) + ">, " + random.choice(answ8).lower() + " " + random.choice(emojies))
+			await message.reply(random.choice(answ8).lower() + " " + random.choice(emojies))
 		if message.content in ['пинг', 'ping', 'пинг!', 'ping!']:
-			await message.channel.send('Понг!')
+			await message.reply('Понг!')
 		if message.content in ['смени мне никнейм', 'смени мне ник', 'смени мой ник', 'измени мой ник']:
 			if(message.guild == None):
 				await message.channel.send('Данную команду можно использовать только на сервере!')
@@ -157,17 +162,17 @@ class MyClient(discord.Client):
 			await message.channel.send('Печатаем новый паспорт...')
 			req = self.get_from('http://free-generator.ru/generator.php?action=word&type=2')
 			if(req == False):
-				await message.channel.send('Ошибка соединения с API: '+self.req_error)
+				await message.reply('Ошибка соединения с API: '+self.req_error)
 				return
 			req2 = self.get_from('http://free-generator.ru/generator.php?action=word&type=1')
 			if(req2 == False):
-				await message.channel.send('Ошибка соединения с API: '+self.req_error)
+				await message.reply('Ошибка соединения с API: '+self.req_error)
 				return
 			newNick = req['word']['word'].title() + " " + req2['word']['word'].title();
 			try:
 				await message.author.edit(nick=newNick)
 			except:
-				await message.channel.send('Службы свыше запретили нам вмешиватся.')
+				await message.reply('Службы свыше запретили нам вмешиватся.')
 			else:
 				profession = json.loads(requests.post('https://randomall.ru/api/general/jobs').text)
 				msg = 'Добро пожаловать, **' + newNick + '**, которого мы никогда не видели :face_with_hand_over_mouth:\n' + \
@@ -175,14 +180,14 @@ class MyClient(discord.Client):
 				await message.channel.send(msg)
 		if message.content in ['сбрось мой ник', 'сбрось мне ник', 'скинь мой ник']:
 			if(message.guild == None):
-				await message.channel.send('Данную команду можно использовать только на сервере!')
+				await message.reply('Данную команду можно использовать только на сервере!')
 				return;
 			try:
 				await message.author.edit(nick=None)
 			except:
-				await message.channel.send('Службы свыше запретили нам вмешиватся.')
+				await message.reply('Службы свыше запретили нам вмешиватся.')
 			else:
-				await message.channel.send('Мы раскрыли вашу истенную сущность.')
+				await message.reply('Мы раскрыли вашу истенную сущность.')
 		if message.content in ['задай тему разговора', 'давай новую тему разговора']:
 			lines = list(open('questions.txt', encoding="utf8"))
 			question =random.choice(lines)
