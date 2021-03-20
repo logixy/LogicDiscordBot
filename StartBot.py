@@ -72,7 +72,7 @@ class MyClient(discord.Client):
 		if message.content in ['бип', 'боп', 'буп']:
 			await message.reply(random.choice(['Бип', 'Боп', 'Буп']))
 				
-		if message.content in ['смени аву плз', 'смени аватар сервера', 'смени иконку сервера', 'смени иконку плз']:
+		if message.content in ['смени аву плз', 'смени аватар сервера', 'смени иконку сервера', 'смени иконку плз', 'смени лого сервера', 'смени лого']:
 			if(message.guild == None):
 				await message.channel.send('Данную команду можно использовать только на сервере!')
 				return;
