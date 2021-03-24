@@ -3,13 +3,13 @@ from requests.exceptions import Timeout
 from discord.ext import tasks, commands
 import config as conf
 from ProjectEverydayLogo import MakePerfect as mpi
-		
+
 class MyClient(discord.Client):
 	req_error = ''
 	async def on_ready(self):
 		print('Logged on as', self.user)
 		print('Uid:',self.user.id)
-		
+
 	def get_from(self, url):
 		headers = {'X-Requested-With': 'XMLHttpRequest', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0'}
 		try:
@@ -19,15 +19,15 @@ class MyClient(discord.Client):
 			return False
 		else:
 			return json.loads(req.text)
-	
+
 	def gen_rand_word(self, type): #type 2 - adjective (прилагать.) 1 - noun (сущ.)
 		req = self.get_from('http://free-generator.ru/generator.php?action=word&type='+str(type))
 		if(req == False):
 			message.channel.send('Ошибка соединения с API: '+self.req_error)
 			return
-		
+
 		return req['word']['word']
-	
+
 	async def on_message(self, message):
         # don't respond to ourselves
 		if message.author == self.user:
@@ -68,10 +68,10 @@ class MyClient(discord.Client):
 			'`Где я?` - Если вы вдруг потерялись, можете спросить прохожего бота для уточнения своего местоположения.\n' + \
 			'    Алисы: `где я оказался?`, `где же я?`, `где я нахожусь?`, `где я сейчас?`, `где я сейчас нахожусь?`\n'
 			await message.reply(text)
-			
+
 		if message.content in ['бип', 'боп', 'буп']:
 			await message.reply(random.choice(['Бип', 'Боп', 'Буп']))
-				
+
 		if message.content in ['смени аву плз', 'смени аватар сервера', 'смени иконку сервера', 'смени иконку плз', 'смени лого сервера', 'смени лого']:
 			if(message.guild == None):
 				await message.channel.send('Данную команду можно использовать только на сервере!')
@@ -81,7 +81,7 @@ class MyClient(discord.Client):
 			await message.reply('Принято! ' + random.choice(m2))
 			mpi.generateIcon()
 			server = discord.Client.get_guild(self, id=message.guild.id)
-			
+
 			with open('ProjectEverydayLogo/out/out.png', 'rb') as f:
 				icon = f.read()
 			await server.edit(icon=icon)
@@ -118,7 +118,7 @@ class MyClient(discord.Client):
 			text = "Статус игровых серверов:\n"
 			for s_name in spisok['servers']:
 				s_data = spisok['servers'][s_name]
-					
+
 				if ( s_data['status'] == 'online' ):
 					stat_e = ':green_circle:'
 					if (s_data['ping'] > 300):
@@ -134,11 +134,20 @@ class MyClient(discord.Client):
 			text += "**Рекорд дня:** " + str(spisok['recordday']) + " (" + spisok['timerecday'] + ")\n"
 			text += "**Рекорд:** " + str(spisok['record']) + " (" + spisok['timerec'] + ")\n"
 			await message.reply(text)
-		if message.content in ['кто я?', 'кто я есть?', 'кто же я?', 'ну кто же я?', 'божечки, что я такое?!']:			
+			text = "**Статус серверного оборудования:**\n"
+			servers_stats = self.get_from('https://status.logicworld.ru/api')
+			for server in servers_stats:
+				if (server['avalible'] != 'Online'):
+					stat_e = ':red_circle:'
+				else:
+					stat_e = ':green_circle:'
+				text += stat_e + "**"+server['name']+"** - "+server['avalible']+"\n"
+			await message.reply(text)
+		if message.content in ['кто я?', 'кто я есть?', 'кто же я?', 'ну кто же я?', 'божечки, что я такое?!']:
 			await message.reply("Ты " + self.gen_rand_word(2) + ".")
-		if message.content in ['кто ты?', 'кто он?', 'кто же он?', 'кто же ты?']:			
+		if message.content in ['кто ты?', 'кто он?', 'кто же он?', 'кто же ты?']:
 			await message.reply("Я думаю он " + self.gen_rand_word(2) + ".")
-		if message.content in ['где я?', 'где я оказался?', 'где же я?', 'где я нахожусь?', 'где я сейчас?', 'где я сейчас нахожусь?']:			
+		if message.content in ['где я?', 'где я оказался?', 'где же я?', 'где я нахожусь?', 'где я сейчас?', 'где я сейчас нахожусь?']:
 			req = self.get_from('https://randstuff.ru/city/generate/')
 			await message.reply("Ты в городе " + req['city']['city'] + " ("+req['city']['country']+").")
 		if message.content in ['получится?', 'получилось?', 'вышло?', 'выйдет?']:
