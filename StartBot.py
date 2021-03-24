@@ -113,27 +113,27 @@ class MyClient(discord.Client):
 		if message.content in ['статус серверов', 'статус сервера', 'server stat', 'статистика сервера']:
 			spisok = self.get_from('https://logicworld.ru/monAJAX/ajax.php')
 			if(spisok == False):
-				await message.reply('Ошибка соединения с API: '+self.req_error)
-				return
-			text = "Статус игровых серверов:\n"
-			for s_name in spisok['servers']:
-				s_data = spisok['servers'][s_name]
+				await message.reply('Ошибка соединения с API проверки статусов игровых серверов: '+self.req_error)
+			else:
+				text = "Статус игровых серверов:\n"
+				for s_name in spisok['servers']:
+					s_data = spisok['servers'][s_name]
 
-				if ( s_data['status'] == 'online' ):
-					stat_e = ':green_circle:'
-					if (s_data['ping'] > 300):
-						stat_e = ':yellow_circle:'
-					if (s_data['ping'] > 350):
-						stat_e = ':orange_circle:'
-					if (s_data['ping'] > 450):
-						stat_e = ':brown_circle:'
-					text += stat_e+"**"+ s_name +"** - ("+ str(s_data['online']) + "/" + str(s_data['slots']) + ") (" + str(s_data['ping']) + "ms)\n"
-				else:
-					text += ":red_circle:**"+s_name+"** - (**"+ s_data['status'] + "**)" + "\n"
-			text += "\n**Общий онлайн:** " + str(spisok['online']) + "/" + str(spisok['slots']) + "\n"
-			text += "**Рекорд дня:** " + str(spisok['recordday']) + " (" + spisok['timerecday'] + ")\n"
-			text += "**Рекорд:** " + str(spisok['record']) + " (" + spisok['timerec'] + ")\n"
-			await message.reply(text)
+					if ( s_data['status'] == 'online' ):
+						stat_e = ':green_circle:'
+						if (s_data['ping'] > 300):
+							stat_e = ':yellow_circle:'
+						if (s_data['ping'] > 350):
+							stat_e = ':orange_circle:'
+						if (s_data['ping'] > 450):
+							stat_e = ':brown_circle:'
+						text += stat_e+"**"+ s_name +"** - ("+ str(s_data['online']) + "/" + str(s_data['slots']) + ") (" + str(s_data['ping']) + "ms)\n"
+					else:
+						text += ":red_circle:**"+s_name+"** - (**"+ s_data['status'] + "**)" + "\n"
+				text += "\n**Общий онлайн:** " + str(spisok['online']) + "/" + str(spisok['slots']) + "\n"
+				text += "**Рекорд дня:** " + str(spisok['recordday']) + " (" + spisok['timerecday'] + ")\n"
+				text += "**Рекорд:** " + str(spisok['record']) + " (" + spisok['timerec'] + ")\n"
+				await message.reply(text)
 			text = "**Статус серверного оборудования:**\n"
 			servers_stats = self.get_from('https://status.logicworld.ru/api')
 			for server in servers_stats:
