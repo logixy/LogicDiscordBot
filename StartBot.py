@@ -27,6 +27,15 @@ class MyClient(discord.Client):
 			return
 
 		return req['word']['word']
+		
+	avserverId = None
+	@tasks.loop(minutes=30)
+	async def gen_rand_avatar(self):
+		if self.avserverId != None:
+			mpi.generateIcon()
+			with open('ProjectEverydayLogo/out/out.png', 'rb') as f:
+				icon = f.read()
+			await self.avserverId.edit(icon=icon)
 
 	async def on_message(self, message):
         # don't respond to ourselves
@@ -72,6 +81,14 @@ class MyClient(discord.Client):
 		if message.content in ['бип', 'боп', 'буп']:
 			await message.reply(random.choice(['Бип', 'Боп', 'Буп']))
 
+		if message.content in ['start autogen avatar']:
+			self.avserverId = discord.Client.get_guild(self, id=message.guild.id)
+			self.gen_rand_avatar.start()
+			await message.reply('Запущена авто-генерация аватарки каждые 30 минут.')
+		if message.content in ['stop autogen avatar']:
+			self.gen_rand_avatar.stop()
+			await message.reply('Авто-генерация аватарки каждые 30 минут - будет отключена при следующей итерации генерирования.')
+			
 		if message.content in ['смени аву плз', 'смени аватар сервера', 'смени иконку сервера', 'смени иконку плз', 'смени лого сервера', 'смени лого']:
 			if(message.guild == None):
 				await message.channel.send('Данную команду можно использовать только на сервере!')
