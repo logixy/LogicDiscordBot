@@ -83,8 +83,11 @@ class MyClient(discord.Client):
 
 		if message.content in ['start autogen avatar']:
 			self.avserverId = discord.Client.get_guild(self, id=message.guild.id)
-			self.gen_rand_avatar.start()
-			await message.reply('Запущена авто-генерация аватарки каждые 30 минут.')
+			if not self.gen_rand_avatar.is_running():
+				self.gen_rand_avatar.start()
+				await message.reply('Запущена авто-генерация аватарки каждые 30 минут.')
+			else:
+				await message.reply('Генерация уже запущена.')
 		if message.content in ['stop autogen avatar']:
 			self.gen_rand_avatar.stop()
 			await message.reply('Авто-генерация аватарки каждые 30 минут - будет отключена при следующей итерации генерирования.')
