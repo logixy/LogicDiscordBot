@@ -36,6 +36,16 @@ class MyClient(discord.Client):
 			with open('ProjectEverydayLogo/out/out.png', 'rb') as f:
 				icon = f.read()
 			await self.avserverId.edit(icon=icon)
+			
+	def convert_qwe_message(self, txt):
+		qwe = list("qwertyuiop[]asdfghjkl;'\zxcvbnm,./")
+		conv_qwe = list("йцукенгшщзхъфывапролджэ\ячсмитьбю.")
+		txt = list(txt)
+		for i in range(len(txt)):
+			for j in range(len(qwe)):
+				if txt[i] == qwe[j]:
+					txt[i] = conv_qwe[j]
+		return ''.join(txt)
 
 	async def on_message(self, message):
         # don't respond to ourselves
@@ -43,6 +53,8 @@ class MyClient(discord.Client):
 			return
 
 		message.content = message.content.lower()
+		# Перевод сообщения написанного в английской раскладке
+		message.content = self.convert_qwe_message(message.content)
 		#print(message.content)
 		if(message.content == '<@!'+str(self.user.id)+'>'):
 			text = 'Что Вам необходимо?\n ' + \
