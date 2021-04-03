@@ -164,9 +164,9 @@ class MyClient(discord.Client):
 				text += stat_e + "**"+server['name']+"** - "+server['avalible']+"\n"
 			await message.reply(text)
 		if message.content in ['кто я?', 'кто я есть?', 'кто же я?', 'ну кто же я?', 'божечки, что я такое?!']:
-			await message.reply("Ты " + self.gen_rand_word(2) + ".")
+			await message.reply("Ты - " + self.gen_rand_word(2) + ".")
 		if message.content in ['кто ты?', 'кто он?', 'кто же он?', 'кто же ты?']:
-			await message.reply("Я думаю он " + self.gen_rand_word(2) + ".")
+			await message.reply("Я думаю, он - " + self.gen_rand_word(2) + ".")
 		if message.content in ['где я?', 'где я оказался?', 'где же я?', 'где я нахожусь?', 'где я сейчас?', 'где я сейчас нахожусь?']:
 			req = self.get_from('https://randstuff.ru/city/generate/')
 			await message.reply("Ты в городе " + req['city']['city'] + " ("+req['city']['country']+").")
