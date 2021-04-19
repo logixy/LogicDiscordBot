@@ -206,18 +206,21 @@ class MyClient(discord.Client):
 				await message.reply('Ошибка соединения с API: '+self.req_error)
 				return
 			req2 = self.get_from('http://free-generator.ru/generator.php?action=word&type=1')
-			if(req2 == False):
+			profession = json.loads(requests.post('https://randomall.ru/api/general/jobs').text)
+			if(req2 == False or profession == False):
 				await message.reply('Ошибка соединения с API: '+self.req_error)
 				return
-			newNick = req['word']['word'].title() + " " + req2['word']['word'].title();
+			newNick = req['word']['word'].title() + " " + req2['word']['word'].title()
 			try:
 				await message.author.edit(nick=newNick)
 			except:
-				await message.reply('Службы свыше запретили нам вмешиватся.')
+				msg = 'Мы подобрали Вам новое имя: **' + newNick + '**\n' + \
+				'Вы **'+profession+'**\n' + \
+				'Но, службы свыше запретили нам вмешиватся. Так что сменить данные вы можете вручную.'
+				await message.reply(msg)
 			else:
-				profession = json.loads(requests.post('https://randomall.ru/api/general/jobs').text)
 				msg = 'Добро пожаловать, **' + newNick + '**, которого мы никогда не видели :face_with_hand_over_mouth:\n' + \
-				'Вы '+profession
+				'Вы **'+profession+'**'
 				await message.channel.send(msg)
 		if message.content in ['сбрось мой ник', 'сбрось мне ник', 'скинь мой ник']:
 			if(message.guild == None):
