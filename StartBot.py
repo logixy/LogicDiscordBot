@@ -215,12 +215,12 @@ class MyClient(discord.Client):
 				await message.author.edit(nick=newNick)
 			except:
 				msg = 'Мы подобрали Вам новое имя: **' + newNick + '**\n' + \
-				'Вы **'+profession+'**\n' + \
+				'Вы - **'+profession+'**\n' + \
 				'Но, службы свыше запретили нам вмешиватся. Так что сменить данные вы можете вручную.'
 				await message.reply(msg)
 			else:
 				msg = 'Добро пожаловать, **' + newNick + '**, которого мы никогда не видели :face_with_hand_over_mouth:\n' + \
-				'Вы **'+profession+'**'
+				'Вы - **'+profession+'**'
 				await message.channel.send(msg)
 		if message.content in ['сбрось мой ник', 'сбрось мне ник', 'скинь мой ник']:
 			if(message.guild == None):
