@@ -45,8 +45,8 @@ class MyClient(discord.Client):
             await self.avserverId.edit(icon=icon)
 
     def convert_qwe_message(self, txt):
-        qwe = list("qwertyuiop[]asdfghjkl;'\\zxcvbnm,./")
-        conv_qwe = list("йцукенгшщзхъфывапролджэ\\ячсмитьбю.")
+        qwe = list("qwertyuiop[]asdfghjkl;'zxcvbnm,./")
+        conv_qwe = list("йцукенгшщзхъфывапролджэячсмитьбю.")
         txt = list(txt)
         for i in range(len(txt)):
             for j in range(len(qwe)):
