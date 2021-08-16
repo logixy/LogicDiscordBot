@@ -45,8 +45,8 @@ class MyClient(discord.Client):
             await self.avserverId.edit(icon=icon)
 
     def convert_qwe_message(self, txt):
-        qwe = list("qwertyuiop[]asdfghjkl;'\zxcvbnm,./")
-        conv_qwe = list("йцукенгшщзхъфывапролджэ\ячсмитьбю.")
+        qwe = list("qwertyuiop[]asdfghjkl;'\\zxcvbnm,./")
+        conv_qwe = list("йцукенгшщзхъфывапролджэ\\ячсмитьбю.")
         txt = list(txt)
         for i in range(len(txt)):
             for j in range(len(qwe)):
@@ -154,13 +154,13 @@ class MyClient(discord.Client):
                 i += 1
             await message.reply(text)
         if message.content in ['статус серверов', 'статус сервера', 'server stat', 'статистика сервера']:
-            spisok = self.get_from('https://logicworld.ru/monAJAX/ajax.php')
+            spisok = self.get_from('https://logicworld.ru/monAJAX/cache/cache.json')
             if(spisok == False):
                 await message.reply('Ошибка соединения с API проверки статусов игровых серверов: ' + self.req_error)
             else:
                 text = "Статус игровых серверов:\n"
                 for s_name in spisok['servers']:
-                    s_data = spisok['servers'][s_name]
+                    s_data = spisok['servers'][s_name] 
 
                     if (s_data['status'] == 'online'):
                         stat_e = ':green_circle:'
