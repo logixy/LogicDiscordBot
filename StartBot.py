@@ -46,7 +46,11 @@ class MyClient(discord.Client):
 
     def convert_qwe_message(self, txt):
         qwe = list("qwertyuiop[]asdfghjkl;'\\zxcvbnm,./")
+<<<<<<< Updated upstream
         conv_qwe = list("йцукенгшщзхъфывапролджэ\\ячсмитьбю.")
+=======
+        conv_qwe = list("йцукенгшщзхъфывапролджэ\ячсмитьбю.")
+>>>>>>> Stashed changes
         txt = list(txt)
         for i in range(len(txt)):
             for j in range(len(qwe)):
