@@ -61,8 +61,9 @@ class MyClient(discord.Client):
 
         message.content = message.content.lower()
         # Перевод сообщения написанного в английской раскладке
-        if not (message.content[0] in "йцукенгшщзхъфывапролджэячсмитьбю"):
-            message.content = self.convert_qwe_message(message.content)
+        if len(message.content) > 0:
+                if not (message.content[0] in "йцукенгшщзхъфывапролджэячсмитьбю"):
+                        message.content = self.convert_qwe_message(message.content)
         # print(message.content)
         if(message.content == '<@!' + str(self.user.id) + '>'):
             text = 'Что Вам необходимо?\n ' + \
