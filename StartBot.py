@@ -193,6 +193,7 @@ class MyClient(discord.Client):
                     stat_e = ':green_circle:'
                 text += stat_e + "**" + \
                     server['name'] + "** - " + server['avalible'] + "\n"
+            text += "\nСтраница мониторинга проекта <https://status.logicworld.ru/>"
             await message.reply(text)
         if message.content in ['кто я?', 'кто я есть?', 'кто же я?', 'ну кто же я?', 'божечки, что я такое?!', 'хто я?']:
             await message.reply("Ты - " + self.gen_rand_word(2) + ".")
