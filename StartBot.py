@@ -39,10 +39,13 @@ class MyClient(discord.Client):
     @tasks.loop(minutes=30)
     async def gen_rand_avatar(self):
         if self.avserverId != None:
-            mpi.generateIcon()
-            with open('ProjectEverydayLogo/out/out.png', 'rb') as f:
-                icon = f.read()
-            await self.avserverId.edit(icon=icon)
+            try:
+                mpi.generateIcon()
+                with open('ProjectEverydayLogo/out/out.png', 'rb') as f:
+                    icon = f.read()
+                await self.avserverId.edit(icon=icon)
+            except Exception as error:
+                print(error)
 
     def convert_qwe_message(self, txt):
         qwe = list("qwertyuiop[]asdfghjkl;'zxcvbnm,./")
@@ -199,6 +202,8 @@ class MyClient(discord.Client):
             await message.reply("Ты - " + self.gen_rand_word(2) + ".")
         if message.content in ['кто ты?', 'кто он?', 'кто же он?', 'кто же ты?', 'хто он?', 'хто же он?', 'хто ты?']:
             await message.reply("Я думаю, он - " + self.gen_rand_word(2) + ".")
+        if message.content in ['почему я?', 'почему он?', 'почему они?', 'почему мы?', 'почему она?', 'почему?']:
+            await message.reply("Потому что " + self.gen_rand_word(2) + ".")
         if message.content in ['где я?', 'где я оказался?', 'где же я?', 'где я нахожусь?', 'где я сейчас?', 'где я сейчас нахожусь?']:
             req = self.get_from('https://randstuff.ru/city/generate/')
             await message.reply("Ты в городе " + req['city']['city'] + " (" + req['city']['country'] + ").")
