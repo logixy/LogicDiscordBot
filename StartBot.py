@@ -19,7 +19,7 @@ class MyClient(discord.Client):
         headers = {'X-Requested-With': 'XMLHttpRequest',
                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0'}
         try:
-            req = requests.get(url, headers=headers, timeout=8)
+            req = requests.get(url, headers=headers, timeout=20)
         except Timeout:
             return False
         else:
@@ -164,7 +164,7 @@ class MyClient(discord.Client):
             else:
                 text = "Статус игровых серверов:\n"
                 for s_name in spisok['servers']:
-                    s_data = spisok['servers'][s_name] 
+                    s_data = spisok['servers'][s_name]
 
                     if (s_data['status'] == 'online'):
                         stat_e = ':green_circle:'
@@ -189,14 +189,24 @@ class MyClient(discord.Client):
                 await message.reply(text)
             text = "**Статус серверного оборудования:**\n"
             servers_stats = self.get_from('https://status.logicworld.ru/api')
+            errors_data = {
+                'Главный сервер': 'Не доступен сервер #1! Cкорее всего нет энергообеспечения либо интернет-соединения.'
+                'CDN': 'Недоступен главный CDN. Может наблюдаться низкая скорость скачивания и обновления игровых клиентов.',
+                'Второй сервер': 'Недоступен сервер #2! Cкорее всего нет энергообеспечения либо интернет-соединения.',
+                'Радио': 'Наблюдаются проблемы с радио-сервером. Придется посидеть в тишине. Его вообще кто-то слушает?!',
+                'Лаунч-сервер': 'На данный момент лаунч-сервер не доступен. Весь функционал лаунчера недоступен.'
+            }
+            err_data = ''
             for server in servers_stats:
                 if (server['avalible'] != 'Online'):
                     stat_e = ':red_circle:'
+                    if (server['name'] in errors_data):
+                        err_data += ":exclamation: " + errors_data[server['name']] + "\n";
                 else:
                     stat_e = ':green_circle:'
                 text += stat_e + "**" + \
                     server['name'] + "** - " + server['avalible'] + "\n"
-            text += "\nСтраница мониторинга проекта <https://status.logicworld.ru/>"
+            text += "\n" + err_data + "\nСтраница мониторинга проекта <https://status.logicworld.ru/>"
             await message.reply(text)
         if message.content in ['кто я?', 'кто я есть?', 'кто же я?', 'ну кто же я?', 'божечки, что я такое?!', 'хто я?']:
             await message.reply("Ты - " + self.gen_rand_word(2) + ".")
