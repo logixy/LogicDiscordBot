@@ -6,6 +6,7 @@ from requests.exceptions import Timeout
 from discord.ext import tasks, commands
 import config as conf
 from ProjectEverydayLogo import MakePerfect as mpi
+import brainfuck as bf
 
 
 class MyClient(discord.Client):
@@ -63,6 +64,7 @@ class MyClient(discord.Client):
             return
 
         message.content = message.content.lower()
+        original_layout_command = message.content
         # Перевод сообщения написанного в английской раскладке
         if len(message.content) > 0:
                 if not (message.content[0] in "йцукенгшщзхъфывапролджэячсмитьбю"):
@@ -276,7 +278,10 @@ class MyClient(discord.Client):
             question = random.choice(lines)
             await message.channel.send('Хорошо. Я задам такой вопрос:\n**' + question + '**\nПостарайтесь на него развёрнуто ответить и продолжить разговор вместе другими.\n' +
                                        'Если вы хотите поменять вопрос или разговор на прошлый исчерпан - напишите "давай новую тему разговора"')
-
+        if original_layout_command.startswith('bf'):
+            comm = original_layout_command.split(" ")
+            if len(comm) == 2:
+                await message.channel.send(bf.run(comm[1]))
 
 client = MyClient()
 client.run(conf.bot_token)
