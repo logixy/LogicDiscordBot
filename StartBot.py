@@ -16,6 +16,12 @@ class MyClient(discord.Client):
         print('Logged on as', self.user)
         print('Uid:', self.user.id)
 
+        file_guild_id = open("server_gen_id.txt", "r").read()
+        if file_guild_id != "":
+            self.avserverId = discord.Client.get_guild(
+                    self, id=int(file_guild_id))
+            self.gen_rand_avatar.start()
+
     def get_from(self, url):
         headers = {'X-Requested-With': 'XMLHttpRequest',
                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0'}
@@ -110,12 +116,17 @@ class MyClient(discord.Client):
         if message.content in ['запусти автогенерацию аватарки']:
             self.avserverId = discord.Client.get_guild(
                 self, id=message.guild.id)
+            print(self.avserverId, message.guild.id)
             if not self.gen_rand_avatar.is_running():
+                file_guild_id = open("server_gen_id.txt", "w")
+                file_guild_id.write(str(message.guild.id))
                 self.gen_rand_avatar.start()
                 await message.reply('Запущена авто-генерация аватарки каждые 30 минут.')
             else:
                 await message.reply('Генерация уже запущена.')
         if message.content in ['останови автогенерацию аватарки']:
+            file_guild_id = open("server_gen_id.txt", "w")
+            file_guild_id.write("")
             self.gen_rand_avatar.stop()
             await message.reply('Авто-генерация аватарки каждые 30 минут - будет отключена при следующей итерации генерирования.')
 
