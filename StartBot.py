@@ -501,12 +501,12 @@ async def dl_worker(interaction, name: str, video: bool):
             #print(f'[{proc.returncode}]')
             #print(f'{stdout.decode()}')
             #print(f'{stderr.decode()}')
-            start_dlg = time.time()-1
+            start_dlg = time.time()
             while True:
                 line = await proc.stdout.readline()
                 if not line:
                     break
-                current_time = time.time()
+                current_time = time.time()-1
                 if current_time - start_dlg >= 1:
                     await interaction.edit_original_response(content='[2.5/3] '+line.decode().strip())
                     start_dlg = current_time
