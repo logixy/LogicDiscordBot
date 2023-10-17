@@ -1,5 +1,11 @@
 # Bot config
 config.py
+# Database
+ldb.db
+# vscode
+.vscode
+# ytdl
+downloaded_files
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -16,7 +22,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -46,6 +51,7 @@ htmlcov/
 .coverage
 .coverage.*
 .cache
+.ruff_cache
 nosetests.xml
 coverage.xml
 *.cover
