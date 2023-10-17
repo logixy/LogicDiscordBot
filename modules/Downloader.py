@@ -44,17 +44,13 @@ class Downloader(commands.Cog, name="Downloader"):
         }
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                loop = asyncio.get_event_loop()
                 if (name.startswith("http")):
-                    info = ydl.extract_info(f"{name}", download=False)
+                    info = await loop.run_in_executor(None, lambda:ydl.extract_info(name, download=False))
                     url = info['webpage_url']
                     d = int(info['duration'])
                 else:
-                    # Search on ytMusic use ytmAPI
-                    #ytm = ytmusicapi.YTMusic()
-                    #info = ytm.search(name)[0]
-                    #url = f"https://music.youtube.com/watch?v={info['videoId']}"
-                    #d = int(info['duration_seconds'])
-                    info = ydl.extract_info(f"ytsearch:{name}", download=False)['entries'][0] # Search in YouTube
+                    info = await loop.run_in_executor(None, lambda: ydl.extract_info(f"ytsearch:{name}", download=False)['entries'][0]) # Search in YouTube
                     url = info['webpage_url']
                     d = int(info['duration'])
                 title = info['title']
@@ -72,7 +68,6 @@ class Downloader(commands.Cog, name="Downloader"):
                     raise Exception("Duration (audio) longest 2000s")
                 dl_embed.description = '[3/4] Loading...'
                 await interaction.edit_original_response(embed=dl_embed)
-                #ydl.download([url])
                 # КостыльGaming inc (multi-threaded ultra asynchronous download)
                 if (video):
                     proc = await asyncio.create_subprocess_exec(
@@ -89,10 +84,7 @@ class Downloader(commands.Cog, name="Downloader"):
                         '--embed-metadata', '--output', f"{tmp_dir}/{r_filename}.%(ext)s", url,
                         stdout=asyncio.subprocess.PIPE,
                         stderr=asyncio.subprocess.PIPE)
-                #stdout, stderr = await proc.communicate()
-                #print(f'[{proc.returncode}]')
-                #print(f'{stdout.decode()}')
-                #print(f'{stderr.decode()}')
+                        
                 start_dlg = time.time()
                 while True:
                     line = await proc.stdout.readline()
@@ -119,7 +111,6 @@ class Downloader(commands.Cog, name="Downloader"):
                         dl_embed.set_thumbnail(url=info['thumbnail'])
                     if 'uploader' in info:
                         title += "\n\n" + info['uploader']
-                        #dl_embed.set_footer(text=info['uploader'])
                     dl_embed.description = title
                     dl_embed.title = None
                     await interaction.edit_original_response(embed=dl_embed,attachments=[File(path)])
