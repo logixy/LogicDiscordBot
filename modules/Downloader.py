@@ -19,7 +19,9 @@ class Downloader(commands.Cog, name="Downloader"):
 
     async def dl_worker(self, interaction, name: str, video: bool):
         start_dl = time.time()
-        await interaction.response.send_message('[1/5] Getting data...')
+        dl_embed = Embed(title="💾 Downloader", color=Colour.random())
+        dl_embed.description = '[1/4] Getting data...'
+        await interaction.response.send_message(embed=dl_embed)
         tmp_dir = "tmp"
         r_filename = str(uuid.uuid4())
         ydl_opts = {
@@ -62,12 +64,14 @@ class Downloader(commands.Cog, name="Downloader"):
                     r_filename = title.replace(' ', '-')
                 file = f"{r_filename}.{ext}"
                 path = os.getcwd() + '/' + (tmp_dir+'/'+file).strip()
-                await interaction.edit_original_response(content='[2/5] Checking...')
+                dl_embed.description = '[2/4] Checking...'
+                await interaction.edit_original_response(embed=dl_embed)
                 if d > 1000 and video:
                     raise Exception("Duration (video) longest 1000s")
                 if d > 2000:
                     raise Exception("Duration (audio) longest 2000s")
-                await interaction.edit_original_response(content="[3/5] Loading...")
+                dl_embed.description = '[3/4] Loading...'
+                await interaction.edit_original_response(embed=dl_embed)
                 #ydl.download([url])
                 # КостыльGaming inc (multi-threaded ultra asynchronous download)
                 if (video):
@@ -96,20 +100,29 @@ class Downloader(commands.Cog, name="Downloader"):
                         break
                     current_time = time.time()-1
                     if current_time - start_dlg >= 1:
-                        await interaction.edit_original_response(content='[3/5] '+line.decode().strip())
+                        dl_embed.description = '[3/4] '+line.decode().strip()
+                        await interaction.edit_original_response(embed=dl_embed)
                         start_dlg = current_time
                     await asyncio.sleep(0.1)
                 await proc.wait()
                 
-                await interaction.edit_original_response(content='[4/5] Uploading...')
+                dl_embed.description = '[4/4] Uploading...'
+                await interaction.edit_original_response(embed=dl_embed)
 
                 check_file = os.path.exists(path)
                 
                 if check_file:
-                    await interaction.edit_original_response(content="[5/5] Uploading...")
                     time_dl = round(time.time() - start_dl, 2)
-                    title = f"{title} _({str(time_dl)}s)_"
-                    await interaction.edit_original_response(content=title,attachments=[File(path)])
+                    title = f"**{title}**"
+                    print("Dl time: "+str(time_dl)+"s")
+                    if 'thumbnail' in info:
+                        dl_embed.set_thumbnail(url=info['thumbnail'])
+                    if 'uploader' in info:
+                        title += "\n\n" + info['uploader']
+                        #dl_embed.set_footer(text=info['uploader'])
+                    dl_embed.description = title
+                    dl_embed.title = None
+                    await interaction.edit_original_response(embed=dl_embed,attachments=[File(path)])
                     os.remove(path)
 
         except Exception as e:
@@ -122,12 +135,6 @@ class Downloader(commands.Cog, name="Downloader"):
             finally:
                 # Exception pass
                 await interaction.edit_original_response(content=e)
-            
-            
-    def render_game(gameMatrix) -> str:
-        return ''.join(gameMatrix[0]) + \
-        "\n" + ''.join(gameMatrix[1]) + \
-        "\n" + ''.join(gameMatrix[2])
 
 
 async def setup(bot):
