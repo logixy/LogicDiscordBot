@@ -151,7 +151,7 @@ class Minigames(commands.Cog, name="Minigames"):
                             action: Literal["help", "start (50$)", "end", "status", "feed 🍎 (30$)", "feed 🍞 (60$)", "debug"],
                             target_user: Member = None,
                             ephemeral: bool=False):
-        command_id = 1163557976636928101
+        command_id = 1162854751449403529
         # Init used resources
         resources = {
             'pickaxe':     '<:stonepickaxe:1158872199529242704>',
@@ -264,10 +264,13 @@ class Minigames(commands.Cog, name="Minigames"):
             if (action == "start (50$)"):
                 if (user_id != target_user_id):
                     message = "Вы не можете запускать игру другого игрока!"
+                    break
                 if cave_session is not None:
                     message = "Процесс добычи уже был запущен!"
+                    break
                 if (self.economy.get_balance(user_id) < 50):
                     message = "Недостаточно средств!"
+                    break
                 
                 self.economy.add_money(user_id, 50*-1)
                 self.db.execute("INSERT INTO cave_game (time_start, user_id, hunger) VALUES (?, ?, ?)", [round(time.time()), user_id, max_hunger])
@@ -281,6 +284,7 @@ class Minigames(commands.Cog, name="Minigames"):
                     title_status = f"**Статус добычи** \n\n"
                 if cave_session is None:
                     message = f"{title_status}\n**Процесс добычи не запущен!**"
+                    break
                     
                 if not message:
                     message = title_status \
