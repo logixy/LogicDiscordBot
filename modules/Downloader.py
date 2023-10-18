@@ -48,11 +48,10 @@ class Downloader(commands.Cog, name="Downloader"):
                 if (name.startswith("http")):
                     info = await loop.run_in_executor(None, lambda:ydl.extract_info(name, download=False))
                     url = info['webpage_url']
-                    d = int(info['duration'])
                 else:
                     info = await loop.run_in_executor(None, lambda: ydl.extract_info(f"ytsearch:{name}", download=False)['entries'][0]) # Search in YouTube
                     url = info['webpage_url']
-                    d = int(info['duration'])
+                d = 1 if 'duration' not in info else info['duration']
                 title = info['title']
                 ext = 'mp4' if video else 'mp3'
                 r_filename = slugify(title)
@@ -107,10 +106,20 @@ class Downloader(commands.Cog, name="Downloader"):
                     time_dl = round(time.time() - start_dl, 2)
                     title = f"**{title}**"
                     print("Dl time: "+str(time_dl)+"s")
+                    if 'track' in info:
+                        title = f"**{info['track']}**"
                     if 'thumbnail' in info:
                         dl_embed.set_thumbnail(url=info['thumbnail'])
-                    if 'uploader' in info:
-                        title += "\n\n" + info['uploader']
+                    if 'artist' in info:
+                        title += f"\n\n {info['artist']}"
+                    elif 'uploader' in info:
+                        title += f"\n\n {info['uploader']}"
+                    if 'album' in info:
+                        title += f" • {info['album']}"
+                    if 'album' in info:
+                        title += f" • {info['album']}"
+                    if 'release_year' in info:
+                        title += f" • {info['release_year']}"
                     dl_embed.description = title
                     dl_embed.title = None
                     await interaction.edit_original_response(embed=dl_embed,attachments=[File(path)])
@@ -125,7 +134,7 @@ class Downloader(commands.Cog, name="Downloader"):
                 os.remove(path)
             finally:
                 # Exception pass
-                await interaction.edit_original_response(content=e)
+                await interaction.edit_original_response(content=e, embed=None)
 
 
 async def setup(bot):
