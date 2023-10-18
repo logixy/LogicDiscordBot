@@ -96,6 +96,8 @@ class Core(commands.Cog, name="Core"):
                 t += f"\n{extension}: **ERROR (Not found)**"
             except commands.ExtensionNotLoaded:
                 t += f"\n{extension}: **ALREADY UNLOADED**"
+            except Exception as e:
+                t += f"\n{extension}: {e}"
         embed = Embed(
           title="🔧 Extension handler",
           description=t,
