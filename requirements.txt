@@ -1,0 +1,6 @@
+discord.py==2.3.2
+easygoogletranslate==0.0.4
+Requests==2.31.0
+seleniumbase==4.20.1
+transliterate==1.10.2
+yt_dlp==2023.7.6
