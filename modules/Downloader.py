@@ -67,6 +67,8 @@ class Downloader(commands.Cog, name="Downloader"):
                     raise Exception("Duration (video) longest 1000s")
                 if d > 2000:
                     raise Exception("Duration (audio) longest 2000s")
+                if 'thumbnail' in info:
+                    dl_embed.set_thumbnail(url=info['thumbnail'])
                 dl_embed.description = '[3/4] Loading...'
                 await interaction.edit_original_response(embed=dl_embed)
                 # КостыльGaming inc (multi-threaded ultra asynchronous download)
@@ -110,8 +112,6 @@ class Downloader(commands.Cog, name="Downloader"):
                     print("Dl time: "+str(time_dl)+"s")
                     if 'track' in info:
                         title = f"**{info['track']}**"
-                    if 'thumbnail' in info:
-                        dl_embed.set_thumbnail(url=info['thumbnail'])
                     if 'artist' in info:
                         title += f"\n\n {info['artist']}"
                     elif 'uploader' in info:
