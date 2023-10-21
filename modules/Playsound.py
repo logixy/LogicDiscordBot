@@ -70,7 +70,7 @@ class Playsound(commands.Cog, name="Playsound"):
             
             # Add audio to queue
             add_text = ""
-            entries = info['entries'] if 'entries' in info else info
+            entries = info['entries'] if 'entries' in info else [info]
             for i in entries:
                 self.queue[guild_id].append({'title': i['title'], 
                                             'url': i['url'], 
