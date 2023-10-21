@@ -16,28 +16,30 @@ $ pip install -r requirements.txt
 
 ## Current supported features
  ```
-Brainfuck 
-/bf /bft
-Chatbot 
-/chatbot !lw uwu
-Core 
-/ping /dbs /extensions /extension
-Downloader 
-/dl
-Economics 
-/money /pay /moneytop
-Esoterics 
-/horoscope
-Logicutils 
-/votetop /serverstat
-Minigames 
-/banme /reward /slots /cave /guess
-R34 
-/r34
-Randstuff 
+Randstuff
 /joke /fact /where /whoami /whoisit /randnick /google
-Translator 
-/translate
-Youchat 
+Esoterics
+/horoscope
+Youchat
 /chat
+Minigames
+/banme /reward /slots /cave /guess
+Economics
+/money /pay /moneytop
+Chatbot
+/chatbot !lw uwu
+Core
+/ping /dbs /extensions /extension
+R34
+/r34
+Downloader
+/dl
+Brainfuck
+/bf /bft
+Playsound
+/play /stop /skip /queue
+Translator
+/translate
+Logicutils
+/votetop /serverstat
  ```
