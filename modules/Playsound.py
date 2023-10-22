@@ -143,7 +143,7 @@ class Playsound(commands.Cog, name="Playsound"):
                 url = sound['url']
                 image = sound['thumbnail']
                 start_time = time.time()
-                progressbar_size = 13 # Max ▱
+                progressbar_size = 12 # Max ▱
                 channel = self.vc[guild_id].channel.name
                 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5','options': '-vn'}
                 self.vc[guild_id].play(FFmpegPCMAudio(url, executable="ffmpeg", **FFMPEG_OPTIONS), after=None)
