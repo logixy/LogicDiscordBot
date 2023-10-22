@@ -8,6 +8,7 @@
 [![GitHub release](https://img.shields.io/github/release/LogicWorlds/LogicDiscordBot?include_prereleases=&sort=semver&color=blue)](https://github.com/LogicWorlds/LogicDiscordBot/releases/)
 [![License](https://img.shields.io/badge/License-GPL--3.0-blue)](https://github.com/LogicWorlds/LogicDiscordBot/blob/main/LICENSE)
 [![issues - LogicDiscordBot](https://img.shields.io/github/issues/LogicWorlds/LogicDiscordBot)](https://github.com/LogicWorlds/LogicDiscordBot/issues)
+![preview](https://github.com/LogicWorlds/LogicDiscordBot/assets/18057310/6d726b5e-97a4-4bd6-87d1-73733eb6b31f)
 
 ## Installing
 ```
