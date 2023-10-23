@@ -49,7 +49,7 @@ class R34(commands.Cog, name="R34"):
                 if video:
                     formatted_urls += f"[[{i+1}]]({url}) "
                 else:
-                    resp = webhandler.get(url)
+                    resp = webhandler.get(url, timeout=20)
                     await interaction.edit_original_response(content=f"Loading... [{i+1}/{count}] ({round(result_size/1000000, 2)}MB)")
                     file_length = int(resp.headers['Content-Length'])
                     if (file_length+result_size > max_size): continue
