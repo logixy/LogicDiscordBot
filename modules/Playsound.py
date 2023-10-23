@@ -198,16 +198,8 @@ class Playsound(commands.Cog, name="Playsound"):
            return
 
         vc = member.guild.voice_client
-        # Ensure:
-        # - this is a channel move as opposed to anything else
-        # - this is our instance's voice client and we can action upon it
-        if (
-            before.channel and  # if this is None this could be a join
-            after.channel and  # if this is None this could be a leave
-            # before.channel != after.channel and  # if these match then this could be e.g. server deafen
-            isinstance(vc, VoiceClient) #and  # None & not external Protocol check
-            # vc.channel == after.channel  # our current voice client is in this channel
-        ):
+
+        if (isinstance(vc, VoiceClient)):
             print("Re-connect audio player")
             # If the voice was intentionally paused don't resume it for no reason
             if vc.is_paused():
