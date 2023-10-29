@@ -14,7 +14,7 @@ def get_data(url) -> str:
     headers = {'X-Requested-With': 'XMLHttpRequest',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0'}
     try:
-        req = get(url, headers=headers, timeout=20)
+        req = get(url, headers=headers, timeout=10)
     except Timeout:
         req_error = "Timeout"
     except Exception as e:
@@ -26,11 +26,11 @@ def get_json(url:str) -> str:
     try:
         return json.loads(get_data(url))
     except ValueError as e:
-        return "{}"
+        return ""
 
 def post_json(url:str) -> str:
     try:
         return json.loads(post(url).text)
     except ValueError as e:
-        return "{}"
+        return ""
     

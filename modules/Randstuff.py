@@ -1,4 +1,5 @@
 import random
+from urllib.parse import urlparse
 from discord.ext import commands
 from discord import app_commands, Embed, Colour, Interaction, Message
 from modules.utils import webhandler
@@ -47,6 +48,32 @@ class Randstuff(commands.Cog, name="Randstuff"):
         search_msg = '+'.join(search_msg.split())
         res_mess = f"Я думаю, это здась: [Google](https://www.google.com/search?q={search_msg})"
         await interaction.response.send_message(res_mess)
+
+    @app_commands.command(name = "surl", description = "Short the link")
+    async def surl_command(self, interaction: Interaction, link:str):
+        embed = Embed(color=Colour.orange(), title="🔗 URL shorter")
+        if self.is_url(link) is False:
+            embed.description = "Link is not valid url"
+            await interaction.response.send_message(embed=embed)
+            return
+        
+        embed.description = "Shorted link: {}".format(self.short_url(link))
+        await interaction.response.send_message(embed=embed)
+
+    
+    def short_url(self, url):
+        base_url = 'http://tinyurl.com/api-create.php'
+        data = {'url': url}
+        response = webhandler.post(base_url, data=data)
+        short_url = response.text
+        return short_url
+    
+    def is_url(self, url):
+        try:
+            result = urlparse(url)
+            return all([result.scheme, result.netloc])
+        except ValueError:
+            return False
 
     def get_joke(self) -> str:
         data = webhandler.get_json('https://randstuff.ru/joke/generate/')
