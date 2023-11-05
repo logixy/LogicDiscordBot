@@ -1,9 +1,11 @@
 import asyncio
+import base64
 import os
+import random
 import time
 import uuid
 from discord.ext import commands
-from discord import app_commands, Embed, Colour, Member, Message, File
+from discord import app_commands, Embed, Colour, Member, Message, File, Attachment, Interaction
 from transliterate import slugify
 import yt_dlp
 from config import yt_dlp_addr
@@ -17,9 +19,9 @@ class Downloader(commands.Cog, name="Downloader"):
     async def dl_command(self, interaction, name:str, video: bool=False):
         await self.dl_worker(interaction, name, video)
 
-    async def dl_worker(self, interaction, name: str, video: bool):
+    async def dl_worker(self, interaction: Interaction, name: str, video: bool):
         start_dl = time.time()
-        dl_embed = Embed(title="💾 Downloader", color=Colour.random())
+        dl_embed = Embed(title="💾 Downloader", color=Colour.dark_gray())
         dl_embed.description = '[1/4] Getting data...'
         await interaction.response.send_message(embed=dl_embed)
         tmp_dir = "tmp"

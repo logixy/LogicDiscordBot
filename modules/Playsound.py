@@ -17,7 +17,7 @@ class Playsound(commands.Cog, name="Playsound"):
 
     @app_commands.command(name="play", description="Play sound from url")
     async def play_command(self, interaction: Interaction, name: str):
-        p_embed = Embed(title="🎵 Player", color=Colour.random())
+        p_embed = Embed(title="🎵 Player", color=Colour.orange())
         p_embed.description = 'Getting data...'
         guild_id = interaction.guild.id
         if guild_id not in self.vc:
