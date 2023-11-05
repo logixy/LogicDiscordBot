@@ -7,6 +7,7 @@ class Translator(commands.Cog, name="Translator"):
     def __init__(self, bot):
         self.bot = bot
         self.tr = EasyGoogleTranslate()
+        self.tr_embed = Embed(title="🌐 Translator", color=Colour.blurple())
 
         self.ctx_tr_ru = app_commands.ContextMenu(
             name='Translate to RU',
@@ -24,17 +25,29 @@ class Translator(commands.Cog, name="Translator"):
     @app_commands.command(name = "translate", description= "Simple translate")
     async def translate_command(self, interaction, text:str, to_lang:str = 'en', from_lang:str = ''):
         translated = self.tr.translate(text, target_language=to_lang, source_language=from_lang)
-        await interaction.response.send_message(f"**ORIG:** {text}\n**{to_lang}:** {translated}")
+        self.tr_embed.description = f"**ORIG:** {text}\n**{to_lang}:** {translated}"
+        await interaction.response.send_message(embed=self.tr_embed)
         
     @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
     async def translate_ru_context(self, interaction, message: Message):
+        message.content += self.embeds_text(message)
         translated = self.tr.translate(message.content, target_language='ru')
-        await interaction.response.send_message(translated)
+        self.tr_embed.description = translated
+        await interaction.response.send_message(embed=self.tr_embed)
         
     @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
     async def translate_en_context(self, interaction, message: Message):
+        message.content += self.embeds_text(message)
         translated = self.tr.translate(message.content, target_language='en')
-        await interaction.response.send_message(translated)
+        self.tr_embed.description = translated
+        await interaction.response.send_message(embed=self.tr_embed)
+
+    def embeds_text(self, message: Message):
+        text = ""
+        if len(message.embeds) > 0:
+            for embed in message.embeds:
+                text += f"\n**{embed.title}**\n---\n{embed.description}\n"
+        return text
 
 
 async def setup(bot):
