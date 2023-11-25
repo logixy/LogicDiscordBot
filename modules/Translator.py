@@ -21,11 +21,17 @@ class Translator(commands.Cog, name="Translator"):
         )
         self.bot.tree.add_command(self.ctx_tr_en)
 
+        self.ctx_tr_uk = app_commands.ContextMenu(
+            name='Translate to UK',
+            callback=self.translate_uk_context,
+        )
+        self.bot.tree.add_command(self.ctx_tr_uk)
+
     @app_commands.checks.cooldown(1, 5, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.command(name = "translate", description= "Simple translate")
     async def translate_command(self, interaction, text:str, to_lang:str = 'en', from_lang:str = ''):
         translated = self.tr.translate(text, target_language=to_lang, source_language=from_lang)
-        self.tr_embed.description = f"**ORIG:** {text}\n**{to_lang}:** {translated}"
+        self.tr_embed.description = translated
         await interaction.response.send_message(embed=self.tr_embed)
         
     @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -39,6 +45,13 @@ class Translator(commands.Cog, name="Translator"):
     async def translate_en_context(self, interaction, message: Message):
         message.content += self.embeds_text(message)
         translated = self.tr.translate(message.content, target_language='en')
+        self.tr_embed.description = translated
+        await interaction.response.send_message(embed=self.tr_embed)
+
+    @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
+    async def translate_uk_context(self, interaction, message: Message):
+        message.content += self.embeds_text(message)
+        translated = self.tr.translate(message.content, target_language='uk')
         self.tr_embed.description = translated
         await interaction.response.send_message(embed=self.tr_embed)
 
