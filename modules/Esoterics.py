@@ -22,6 +22,16 @@ class Esoterics(commands.Cog, name="Esoterics"):
         embed.set_footer(text=data['seo_text'])
         await interaction.response.send_message(embed=embed) # , delete_after=60
 
+    @app_commands.checks.cooldown(1, 30, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.command(name = "lunarday", description = "Lunar day for today.")
+    async def lunarday_command(self, interaction: Interaction):
+        data = webhandler.get_json(f"https://horoscopes.rambler.ru/api/front/v4/moon/widget/")
+        embed = Embed(
+          title="🌖 Лунный календарь",
+          description=data['title'],
+          colour=Colour.dark_purple(),
+          timestamp=datetime.datetime.now())
+        await interaction.response.send_message(embed=embed) # , delete_after=60
 
 async def setup(bot):
     await bot.add_cog(Esoterics(bot))
