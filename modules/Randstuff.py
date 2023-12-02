@@ -131,6 +131,19 @@ class Randstuff(commands.Cog, name="Randstuff"):
             await message.reply(random.choice(['Бип', 'Боп', 'Буп', 'null', 'undefined', 'out of bounds', 'себе по'+lowered_message+'ай', \
             'Я в своем познании настолько преисполнился что я как будто бы уже сто триллионов миллиардов лет проживаю на триллионах и триллионах таких же планет, понимаешь как эта земля.']))
 
+        if lowered_message in ['делать?', 'строить?', 'b8', 'получится?', 'получилось?', 'вышло?', 'выйдет?']:
+            answ8 = ['Бесспорно', 'Предрешено', 'Никаких сомнений', 'Определённо да',
+                     'Можешь быть уверен в этом', 'Мне кажется — «да»', 'Вероятнее всего',
+                     'Хорошие перспективы', 'Знаки говорят — «да»', 'Да',
+                     'Пока не ясно, попробуй снова', 'Спроси позже', 'Лучше не рассказывать',
+                     'Сейчас нельзя предсказать', 'Сконцентрируйся и спроси опять',
+                     'Даже не думай', 'Мой ответ — «нет»', 'По моим данным — «нет»',
+                     'Перспективы не очень хорошие', 'Весьма сомнительно']
+            emojies = [':smiling_face_with_3_hearts:', ':sweat_smile:', ':sunglasses:',
+                       ':upside_down:', ':point_up:', ':thinking:', ':woman_shrugging:', ':face_with_raised_eyebrow:',
+                       ':eyes:', ':woman_gesturing_no:', ':dancer:', ':no_mouth:']
+            await message.reply(random.choice(answ8) + " " + random.choice(emojies))
+
         if lowered_message in ['спс', 'спасибо', 'благодарю']:
             await message.add_reaction('\N{COOKIE}')
 
