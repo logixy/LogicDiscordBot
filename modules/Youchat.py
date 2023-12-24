@@ -10,6 +10,11 @@ from modules.utils import youchat
 class Youchat(commands.Cog, name="Youchat"):
     def __init__(self, bot):
         self.bot = bot
+        self.ctx_ai = app_commands.ContextMenu(
+            name='AI',
+            callback=self.ai_context,
+        )
+        self.bot.tree.add_command(self.ctx_ai)
 
     async def youchat_message(self, btext):
         proc = await asyncio.create_subprocess_exec(
@@ -40,9 +45,7 @@ class Youchat(commands.Cog, name="Youchat"):
         text['generated_text'] = gen_text
         return text
     
-    @app_commands.checks.cooldown(1, 60, key=lambda i: (i.guild_id, i.user.id))
-    @app_commands.command(name = "chat", description = "Message to GPT chatbot") 
-    async def chat_command(self, interaction, message:str, ephemeral: bool=False):
+    async def chat(self, interaction, message:str, ephemeral: bool=False):
         await interaction.response.send_message('Waiting...', ephemeral=ephemeral)
         attempts = 3
         for i in range(attempts):
@@ -73,6 +76,15 @@ class Youchat(commands.Cog, name="Youchat"):
             else:
                 await interaction.edit_original_response(content='Request error see the details in the console')
                 print(text)
+
+    @app_commands.checks.cooldown(1, 60, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.command(name = "chat", description = "Message to GPT chatbot") 
+    async def chat_command(self, interaction, message:str, ephemeral: bool=False):
+        await self.chat(interaction, message, ephemeral)
+    
+    @app_commands.checks.cooldown(1, 60, key=lambda i: (i.guild_id, i.user.id))
+    async def ai_context(self, interaction, message: Message):
+        await self.chat(interaction, message.content, False)
 
     async def chat_waiter(self, interaction):
         start_dlg = time.time()
