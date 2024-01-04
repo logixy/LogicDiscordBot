@@ -82,10 +82,17 @@ class Transcriber(commands.Cog, name="Transcriber"):
             if result == "":
                 result = "*nothing*"
             # Send results + truncate in case the transcript is longer than 1900 characters
-            self.trb_embed.description = "**Transcription:\n** ```" + result[:4090] + ("..." if len(result) > 4090 else "") + "```"
-            await msg.edit(embed=self.trb_embed)
+            chunk_size = 1990  # Set the maximum size of each chunk
+            chunks = [result[i:i+chunk_size] for i in range(0, len(result), chunk_size)]
+            for i,chunk in enumerate(chunks):
+                self.trb_embed.description = chunk
+                if i == 0:
+                    await msg.edit(embed=self.trb_embed)
+                else:
+                    self.trb_embed.title = ""
+                    await msg.channel.send(embed=self.trb_embed)
         except Exception as e:
-            self.trb_embed.description = e.message
+            self.trb_embed.description = e.message[:4000]
             await msg.edit(embed=self.trb_embed)
 
 
