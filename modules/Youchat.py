@@ -62,6 +62,7 @@ class Youchat(commands.Cog, name="Youchat"):
                 await asyncio.sleep(random.randint(1,3))
                 
         if 'generated_text' in text and text['generated_text'] != "":
+            await asyncio.sleep(0.1)
             gen_text = text['generated_text']
             chunk_size = 1990  # Set the maximum size of each chunk
             chunks = [gen_text[i:i+chunk_size] for i in range(0, len(gen_text), chunk_size)]
