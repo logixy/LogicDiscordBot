@@ -38,6 +38,17 @@ class Translator(commands.Cog, name="Translator"):
     async def translate_ru_context(self, interaction, message: Message):
         message.content += self.embeds_text(message)
         translated = self.tr.translate(message.content, target_language='ru')
+        if translated == message.content:
+            translator_matrix = {
+                'krya':list("`qwertyuiop[]asdfghjkl;'zxcvbnm,./"),
+                'ru'  :list("ёйцукенгшщзхъфывапролджэячсмитьбю.")
+            }
+            txt = list(message.content.lower())
+            for i in range(len(txt)):
+                for j in range(len(translator_matrix['krya'])):
+                    if txt[i] == translator_matrix['krya'][j]:
+                        txt[i] = translator_matrix['ru'][j]
+            translated = ''.join(txt)
         self.tr_embed.description = translated
         await interaction.response.send_message(embed=self.tr_embed)
         
