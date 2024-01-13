@@ -20,7 +20,7 @@ class Logicutils(commands.Cog, name="Logicutils"):
     
     def get_vote_top(self) -> Embed:
         spisok = webhandler.get_json(
-            'https://logicworld.ru/launcher/tableTopVote.php?mode=api')
+            'https://logixy.net/launcher/tableTopVote.php?mode=api')
         title = "🏆 Топ голосующих"
         if(spisok is False):
             text = 'Ошибка соединения с API: ' + webhandler.req_error
@@ -34,7 +34,7 @@ class Logicutils(commands.Cog, name="Logicutils"):
         return Embed(title=title, description=text, color=Colour.brand_green())
 
     def get_game_servers_status(self) -> Embed:
-        spisok = webhandler.get_json('https://logicworld.ru/monAJAX/cache/cache.json')
+        spisok = webhandler.get_json('https://logixy.net/monAJAX/cache/cache.json')
         title = "🎮 Статус игровых серверов"
         if(spisok is False):
             text = 'Ошибка соединения API проверки статусов игровых серверов: ' + webhandler.req_error
@@ -66,7 +66,7 @@ class Logicutils(commands.Cog, name="Logicutils"):
     
     def get_infrastructure_status(self) -> Embed:
         title = "⚙️ Статус серверного оборудования"
-        servers_stats = webhandler.get_json('https://status.logicworld.ru/api')
+        servers_stats = webhandler.get_json('https://status.logixy.net/api')
         errors_data = {
             'Server \#1': 'Недоступен сервер #1! Cкорее всего нет энергообеспечения либо интернет-соединения.',
             'CDN': 'Недоступен главный CDN. Может наблюдаться низкая скорость скачивания и обновления игровых клиентов.',
@@ -85,7 +85,7 @@ class Logicutils(commands.Cog, name="Logicutils"):
                 stat_e = ':green_circle:'
             text += stat_e + "**" + \
                 server['name'] + "** - " + server['available'] + "\n"
-        text += "\n" + err_data + "\nСтраница мониторинга проекта <https://status.logicworld.ru/>"
+        text += "\n" + err_data + "\nСтраница мониторинга проекта <https://status.logixy.net/>"
         return Embed(title=title, description=text, color=Colour.brand_green())
     
     @commands.Cog.listener("on_message")
