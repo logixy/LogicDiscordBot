@@ -30,22 +30,27 @@ class Core(commands.Cog, name="Core"):
         title_text = "📃 Modules"
         text = ""
         for filename in os.listdir('./modules'):
-            if filename.endswith('.py'):
-                text += f"\n**{filename[:-3]}** ["
+            if filename.endswith('.py') or filename.endswith('.py.disabled'):
+                if filename.endswith('.py'):
+                    filename = filename[:-3]
+                else:
+                    filename = filename[:-12]
+                text += f"\n**{filename}** ["
                 loaded = False
+
                 try:
-                    await self.bot.load_extension(f'modules.{filename[:-3]}')
+                    await self.bot.load_extension(f'modules.{filename}')
                 except commands.ExtensionAlreadyLoaded:
                     text += f"**LOADED**"
                     loaded = True
                 except commands.ExtensionNotFound:
-                    text += f"**ERROR (Not found)**"
+                    text += f"**DISABLED**"
                 else:
                     text += f"**UNLOADED**"
-                    await self.bot.unload_extension(f"modules.{filename[:-3]}")
+                    await self.bot.unload_extension(f"modules.{filename}")
                 text += "]\n "
                 if loaded:
-                    text += self.get_cog_commands(filename[:-3])   
+                    text += self.get_cog_commands(filename)   
         embed = Embed(
           title=title_text,
           description=text,
@@ -72,11 +77,18 @@ class Core(commands.Cog, name="Core"):
         else:
             extensions = [f"{extension}.py"]
         for extension in extensions:
-            if not extension.endswith(".py"):
+            if extension.endswith(".py"):
+                extension = extension[:-3]
+            elif extension.endswith(".py.disabled"):
+                extension = extension[:-12]
+            else:
                 continue
-            extension = extension[:-3]
+            
             try:
                 if(action == 'load'):
+                    module_path = './modules/'+extension+'.py.disabled'
+                    if (os.path.isfile(module_path)): 
+                        os.replace(module_path, './modules/'+extension+'.py')
                     await self.bot.load_extension(f'modules.{extension}')
                     t += f"\nExtension **{extension}** - **LOADED**"
                 elif(action == 'unload'):
@@ -84,12 +96,16 @@ class Core(commands.Cog, name="Core"):
                         t += "\nYou can't unload core module!"
                     else:
                         await self.bot.unload_extension(f'modules.{extension}')
+                        module_path = './modules/'+extension+'.py'
+                        if (os.path.isfile(module_path)): 
+                            os.replace(module_path, './modules/'+extension+'.py.disabled')
                         t += f"\nExtension **{extension}** - **UNLOADED**"
                 elif(action == 'reload'):
                     await self.bot.reload_extension(f'modules.{extension}')
                     t += f"\nExtension **{extension}** - **RELOADED**"
                 upd = True
-                t += "\n Cmds: "+self.get_cog_commands(extension)
+                if action != 'unload':
+                    t += "\n Cmds: "+self.get_cog_commands(extension)
             except commands.ExtensionAlreadyLoaded:
                 t += f"\n{extension}: **ALREADY LOADED**"
             except commands.ExtensionNotFound:
