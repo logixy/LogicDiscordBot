@@ -1,4 +1,5 @@
 import random
+from collections import Counter
 from urllib.parse import urlparse
 from discord.ext import commands
 from discord import app_commands, Embed, Colour, Interaction, Message
@@ -122,9 +123,10 @@ class Randstuff(commands.Cog, name="Randstuff"):
 
         message_text = message.content
         lowered_message = message_text.lower()
+        mc_e = Counter(lowered_message).most_common(1)[0] # most common element
 
-        if len(message_text)/100*50 <= lowered_message.count("а") and len(message_text) > 2:
-            sta = "а" * random.randint(10, 30)
+        if len(message_text)/100*50 <= mc_e[1] and len(message_text) > 2:
+            sta = mc_e[0] * random.randint(10, 30)
             await message.reply(self.upper_case_random_chars(sta))
 
         if lowered_message in ['бип', 'боп', 'буп']:
