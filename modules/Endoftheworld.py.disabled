@@ -1,0 +1,14 @@
+from discord.ext import commands
+from discord import app_commands, Interaction, Message, File
+
+class Endoftheworld(commands.Cog, name="Endoftheworld"):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @app_commands.command(name="end", description="DESTROY ALL!!1!!")
+    async def votetop_command(self, interaction: Interaction):
+        await interaction.response.send_message(content="Maybe you don't need?", file=File("modules\endoftheworld\stillalive.mp3"))
+
+        
+async def setup(bot):
+    await bot.add_cog(Endoftheworld(bot))
