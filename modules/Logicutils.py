@@ -1,3 +1,5 @@
+import asyncio
+import json
 from discord.ext import commands
 from discord import app_commands, Embed, Colour, Interaction, Message
 from modules.utils import webhandler
@@ -17,6 +19,50 @@ class Logicutils(commands.Cog, name="Logicutils"):
         await interaction.response.send_message("Loading...")
         await interaction.edit_original_response(content="", embeds=[self.get_game_servers_status(),
                                                    self.get_infrastructure_status()])
+    
+    @app_commands.command(name="weather", description="Weather information for location")
+    async def weather_command(self, interaction: Interaction, location: str):
+        data = webhandler.get_json(f"https://api.openweathermap.org/data/2.5/forecast?q={location}&cnt=1&units=metric&appid=SUPERSECRETKEY")
+        text = json.dumps(data, indent=2)
+        we = Embed(title=f"⛅Погода ({location})", color=Colour.blue())
+        if (data['cod'] != "200"):
+            we.description = f"**{data['message']}**"
+            await interaction.response.send_message(embed=we)
+            return
+        weather = data['list'][0]
+        wind = weather['wind']
+        deg = wind['deg']
+        text = weather['weather'][0]['description'].title()
+        
+        #temperature
+        text += "\n" + f"{weather['main']['temp_min']} - {weather['main']['temp_max']}°C"
+
+        #wind
+        arrows = ["↓", "↙", "←", "↖", "↑", "↗", "→", "↘"]
+        type = round(((deg+22)%360)/45)
+        text += "\n" + arrows[type] + f" {wind['speed']} — {wind['gust']} m/s"
+
+        #pressure and humidity
+        text += f"\n {weather['main']['pressure']} mmHg | {weather['main']['humidity']}%"
+        
+        we.set_thumbnail(url=f"https://openweathermap.org/img/wn/{weather['weather'][0]['icon']}@4x.png")
+        
+        we.description = text
+
+        we.set_footer(text="OpenWeatherMap", icon_url="https://openweathermap.org/img/wn/02d.png")
+        await interaction.response.send_message(embed=we)
+
+        
+
+    @app_commands.command(name="hardware", description="User hardware information")
+    async def hardware_command(self, interaction: Interaction, user: str):
+        data = webhandler.get_json(f"https://logixy.net/launcher/profileapi.php?mode=hw&user={user}")
+        data_avatar = webhandler.get_json(f"https://logixy.net/launcher/profileapi.php?mode=avatar&user={user}")
+        #text = json.dumps(data, indent=2)
+        text = f"GPU: **{data['gpu']}**\nRAM: **{data['ram']}GB**\nCPU: **{data['physicalProcessors']} cores {data['logicalProcessors']} threads | {data['processorMaxFreq']}Ghz**"
+        embed = Embed(title=f"{user}`s hardware", description=text, color=Colour.brand_red())
+        embed.set_thumbnail(url=f"https://logixy.net{data_avatar['url']}")
+        await interaction.response.send_message(embed=embed)
     
     def get_vote_top(self) -> Embed:
         spisok = webhandler.get_json(
@@ -50,8 +96,13 @@ class Logicutils(commands.Cog, name="Logicutils"):
                         stat_e = ':orange_circle:'
                     if (s_data['ping'] > 450):
                         stat_e = ':brown_circle:'
-                    text += stat_e + "**" + s_name + "** - (" + str(s_data['online']) + "/" + str(
-                        s_data['slots']) + ") (" + str(s_data['ping']) + "ms)\n"
+                    # Progressbar
+                    progressbar_size = 20
+                    progress = round((s_data['online'])/(s_data['slots'])*100)
+                    curr_progress_val = progressbar_size*progress//100
+                    text_progress_bar = ("█"*curr_progress_val).ljust(progressbar_size, "░")
+                    text += stat_e + "**" + s_name + f"** \n [{text_progress_bar}] (" + str(s_data['online']) + "/" + str(
+                        s_data['slots']) + ")\n"
                 else:
                     text += ":red_circle:**" + s_name + \
                         "** - (**" + s_data['status'] + "**)" + "\n"
