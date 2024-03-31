@@ -18,7 +18,7 @@ class Youchat(commands.Cog, name="Youchat"):
 
     async def youchat_message(self, btext):
         proc = await asyncio.create_subprocess_exec(
-                    'python', 'modules/utils/youchat.py', '-t', '12', btext,
+                    'python', 'modules/utils/youchat.py', '-t', '18', btext,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE)
         stdout, stderr = await proc.communicate()
@@ -89,6 +89,7 @@ class Youchat(commands.Cog, name="Youchat"):
 
     async def chat_waiter(self, interaction):
         start_dlg = time.time()
+        timeout = 50 #repeats
         ducks = random.choice([
             ['<:d1:514937588541423617>', '<:d4:803024636099035206>', '<:d2:803024635948040232>', '<:d3:803024636060499988>'],
             ['\N{THINKING FACE}', '<:tf2:802921909539962931>', '<:tf3:802922718810865724>', '<:tf4:1059808410188656771>'],
@@ -123,6 +124,7 @@ class Youchat(commands.Cog, name="Youchat"):
             ],
         ])
         curduck = 0
+        loop = 0
         while True:
             current_time = time.time()-0.4
             if current_time - start_dlg >= 0.4:
@@ -131,6 +133,9 @@ class Youchat(commands.Cog, name="Youchat"):
                     curduck += 1
                 else:
                     curduck = 0
+                    if loop > timeout:
+                        break
+                    loop += 1
                 start_dlg = current_time
                 await asyncio.sleep(0.1)
     

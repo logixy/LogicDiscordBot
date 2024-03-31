@@ -1,8 +1,10 @@
 import asyncio
 import time
 import g4f
+from typing import Literal
 from discord.ext import commands
-from discord import app_commands, Interaction
+from discord import app_commands, Embed, Colour, Interaction
+from modules.utils import webhandler
 
 
 class Gpt(commands.Cog, name="Gpt"):
@@ -23,6 +25,17 @@ class Gpt(commands.Cog, name="Gpt"):
         # streamed completion
         try:
             asyncio.create_task(self.generate_gpt4_response(prompt=message, interaction=interaction))
+            #asyncio.ensure_future(self.generate_gpt4_response(prompt=message, interaction=interaction))
+
+            # res = ""
+            # time_start = time.time()
+            # for message in response:
+            #     res += message
+            #     if res != "":
+            #         if time_start+0.5 > time.time():
+            #             time_start = time.time()
+            #             await interaction.edit_original_response(content=res)
+           # await interaction.edit_original_response(content=response)
         except Exception as e:
             await interaction.edit_original_response(content=str(e))
 

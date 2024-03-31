@@ -1,8 +1,11 @@
 import asyncio
 import json
+from typing import Literal
 from discord.ext import commands
 from discord import app_commands, Embed, Colour, Interaction, Message
 from modules.utils import webhandler
+from datetime import datetime
+from collections import Counter
 
 
 class Logicutils(commands.Cog, name="Logicutils"):
@@ -21,38 +24,125 @@ class Logicutils(commands.Cog, name="Logicutils"):
                                                    self.get_infrastructure_status()])
     
     @app_commands.command(name="weather", description="Weather information for location")
-    async def weather_command(self, interaction: Interaction, location: str):
-        data = webhandler.get_json(f"https://api.openweathermap.org/data/2.5/forecast?q={location}&cnt=1&units=metric&appid=SUPERSECRETKEY")
+    async def weather_command(self, interaction: Interaction, location: str, count: app_commands.Range[int, 1, 40]=3):
+        data = webhandler.get_json(f"https://api.openweathermap.org/data/2.5/forecast?q={location}&cnt={count}&units=metric&appid=SUPERSECRETKEY")
         text = json.dumps(data, indent=2)
-        we = Embed(title=f"⛅Погода ({location})", color=Colour.blue())
-        if (data['cod'] != "200"):
-            we.description = f"**{data['message']}**"
-            await interaction.response.send_message(embed=we)
-            return
-        weather = data['list'][0]
-        wind = weather['wind']
-        deg = wind['deg']
-        text = weather['weather'][0]['description'].title()
-        
-        #temperature
-        text += "\n" + f"{weather['main']['temp_min']} - {weather['main']['temp_max']}°C"
+        wes = []
+        for i in range(count):
+            we = Embed()
+            if (data['cod'] != "200"):
+                we.description = f"**{data['message']}**"
+                await interaction.response.send_message(embed=we)
+                return
+            weather = data['list'][i]
+            wind = weather['wind']
+            deg = wind['deg']
+            text = weather['weather'][0]['description'].title()
+            date = datetime.fromtimestamp(weather['dt'])
+            
+            #temperature
+            text += "\n" + f"{weather['main']['temp_min']} — {weather['main']['temp_max']}°C"
+            
+            #wind
+            arrows = ["↓", "↙", "←", "↖", "↑", "↗", "→", "↘"]
+            type = int(((deg)%360)/45)
+            text += "\n" + arrows[type] + f" {wind['speed']} — {wind['gust']} m/s"
+            
+            #pressure and humidity
+            text += f"\n {weather['main']['pressure']} mmHg | {weather['main']['humidity']}%"
+            
+            
+            if (count <= 10):
+                #title
+                we.title=f"⛅Погода ({location}) ({date.strftime('%b %d')})"
+                we.color = self.get_color_from_temperature(weather['main']['temp'])
+                we.set_thumbnail(url=f"https://openweathermap.org/img/wn/{weather['weather'][0]['icon']}@4x.png")
+                we.set_footer(text="OpenWeatherMap", icon_url="https://openweathermap.org/img/wn/02d.png")
+                we.description = text
+                wes.append(we)
+            else:
+                if (i == 0):  #first element
+                    wem = Embed() #init multiple fields embed
+                    wem.title=f"⛅Погода ({location}) ({date.strftime('%b %d')})"
+                    cur_date = date
+                    max_temp = 0
+                    icons = [] # for count icons (and set most pupular
+                if (cur_date.day != date.day):
+                    wem.title=f"⛅Погода ({location}) ({cur_date.strftime('%b %d')})"
+                    wem.color = self.get_color_from_temperature(max_temp)
+                    wes.append(wem)
+                    wem = Embed()
+                    max_temp = 0
+                    icons = []
+                    cur_date = date
+                
+                wem.add_field(name=date.strftime('%H:%M'), value=text, inline=True)
+                
+                icons.append(weather['weather'][0]['icon'])
+                
+                most_pupular_icon = Counter(icons).most_common(1)[0][0]
+                wem.set_thumbnail(url=f"https://openweathermap.org/img/wn/{most_pupular_icon}@4x.png")
+                if (max_temp < weather['main']['temp']):
+                    max_temp = weather['main']['temp']
+                
+                
+                if (i+1 == count):
+                    wem.title=f"⛅Погода ({location}) ({date.strftime('%b %d')})"
+                    wem.color = self.get_color_from_temperature(max_temp)
+                    wem.set_footer(text="OpenWeatherMap", icon_url="https://openweathermap.org/img/wn/02d.png")
+                    wes.append(wem)
 
-        #wind
-        arrows = ["↓", "↙", "←", "↖", "↑", "↗", "→", "↘"]
-        type = round(((deg+22)%360)/45)
-        text += "\n" + arrows[type] + f" {wind['speed']} — {wind['gust']} m/s"
+        await interaction.response.send_message(embeds=wes)
 
-        #pressure and humidity
-        text += f"\n {weather['main']['pressure']} mmHg | {weather['main']['humidity']}%"
+    def get_color_from_temperature(self, temperature) -> Colour:
+        # Determination of the temperature range and corresponding colors
+        color_ranges = [
+            {'temperature': -20, 'color': '0000FF'},  # Blue
+            {'temperature': 0, 'color': '00FFFF'},   # light blue
+            {'temperature': 10, 'color': '00FF00'},   # Green
+            {'temperature': 20, 'color': 'FFFF00'},   # Yellow
+            {'temperature': 30, 'color': 'FF0000'},   # Red
+        ]
         
-        we.set_thumbnail(url=f"https://openweathermap.org/img/wn/{weather['weather'][0]['icon']}@4x.png")
+        # Search for the corresponding color for a given temperature
+        for i in range(len(color_ranges)):
+            if temperature < color_ranges[i]['temperature']:
+                if i == 0:
+                    return color_ranges[i]['color']
+                else:
+                    # Linear interpolation between the two nearest colors
+                    prev_temp = color_ranges[i-1]['temperature']
+                    prev_color = color_ranges[i-1]['color']
+                    next_temp = color_ranges[i]['temperature']
+                    next_color = color_ranges[i]['color']
+                    ratio = (temperature - prev_temp) / (next_temp - prev_temp)
+                    
+                    # Calculation of an intermediate color
+                    r = int((1 - ratio) * int(prev_color[0:2], 16) + ratio * int(next_color[0:2], 16))
+                    g = int((1 - ratio) * int(prev_color[2:4], 16) + ratio * int(next_color[2:4], 16))
+                    b = int((1 - ratio) * int(prev_color[4:6], 16) + ratio * int(next_color[4:6], 16))
+                    
+                    hex_color = '{:02X}{:02X}{:02X}'.format(r, g, b)
+                    
+                    return Colour(int(hex_color, 16))
         
-        we.description = text
-
-        we.set_footer(text="OpenWeatherMap", icon_url="https://openweathermap.org/img/wn/02d.png")
-        await interaction.response.send_message(embed=we)
-
+        # If temp very hot - return latest
+        return Colour(int(color_ranges[-1]['color'], 16))  
         
+    def get_color_from_temperature2(self, temperature):
+        color_ranges = [
+            (-20, Colour.dark_blue()),    # Blue
+            (0, Colour.blue()),   # Light blue
+            (10, Colour.green()),   # Green
+            (20, Colour.yellow()),   # Yellow
+            (30, Colour.red())    # Red
+        ]
+        
+        for temp, color in color_ranges:
+            if temperature < temp:
+                return color
+        
+        return color_ranges[-1][1]
 
     @app_commands.command(name="hardware", description="User hardware information")
     async def hardware_command(self, interaction: Interaction, user: str):

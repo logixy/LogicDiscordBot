@@ -126,6 +126,18 @@ class Downloader(commands.Cog, name="Downloader"):
                         title += f" • {info['release_year']}"
                     dl_embed.description = title
                     dl_embed.title = None
+                    state = {
+                        'metadata': {
+                            'title': 'My Attachment',
+                            'description': 'This is an example attachment',
+                            'author': 'John Doe'
+                        },
+                        'permissions': {
+                            'read': True,
+                            'write': False
+                        }
+                    }
+
                     await interaction.edit_original_response(embed=dl_embed,attachments=[File(path)])
                     os.remove(path)
 

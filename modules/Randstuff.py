@@ -38,7 +38,7 @@ class Randstuff(commands.Cog, name="Randstuff"):
             await interaction.user.edit(nick=newNick)
         except:
             msg = 'Мы подобрали Вам новое имя: **' + newNick + '**\n' + \
-                'Но, службы свыше запретили нам вмешиватся. Так что сменить данные вы можете вручную.'
+                'Но, службы свыше запретили нам вмешиваться. Так что сменить данные вы можете вручную.'
             await interaction.edit_original_response(content=msg)
         else:
             msg = 'Добро пожаловать, **' + newNick + '**, которого мы никогда не видели :face_with_hand_over_mouth:\n'
@@ -118,14 +118,14 @@ class Randstuff(commands.Cog, name="Randstuff"):
 
     @commands.Cog.listener("on_message")
     async def chat_message(self, message: Message):
-        if (message.author.bot):
+        if message.author.bot or not message.content:
             return
 
         message_text = message.content
         lowered_message = message_text.lower()
         mc_e = Counter(lowered_message).most_common(1)[0] # most common element
 
-        if len(message_text)/100*50 <= mc_e[1] and len(message_text) > 2:
+        if len(message_text)/100*50 < mc_e[1] and len(message_text) > 2:
             sta = mc_e[0] * random.randint(10, 30)
             await message.reply(self.upper_case_random_chars(sta))
 
@@ -181,7 +181,7 @@ class Randstuff(commands.Cog, name="Randstuff"):
                 await message.author.edit(nick=newNick)
             except:
                 msg = 'Мы подобрали Вам новое имя: **' + newNick + '**\n' + \
-                    'Но, службы свыше запретили нам вмешиватся. Так что сменить данные вы можете вручную.'
+                    'Но, службы свыше запретили нам вмешиваться. Так что сменить данные вы можете вручную.'
                 await message.reply(msg)
             else:
                 msg = 'Добро пожаловать, **' + newNick + '**, которого мы никогда не видели :face_with_hand_over_mouth:\n'

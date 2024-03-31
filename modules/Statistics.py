@@ -1,5 +1,8 @@
+import random
+from urllib.parse import urlparse
 from discord.ext import commands
 from discord import app_commands, Embed, Colour, Interaction, Message
+from modules.utils import webhandler
 
 
 class Statistics(commands.Cog, name="Statistics"):
@@ -25,7 +28,9 @@ class Statistics(commands.Cog, name="Statistics"):
         channel = await self.bot.fetch_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
         progressbar_size = 12
-        if message.embeds[0].title == self.counter_embed.title:
+        if message.embeds.count == 0:
+            return
+        if len(message.embeds) > 0 and message.embeds[0].title == self.counter_embed.title:
             reactions = ""
             reactions_summ = 0
             for reaction in message.reactions:

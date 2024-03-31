@@ -82,6 +82,8 @@ class Transcriber(commands.Cog, name="Transcriber"):
             if result == "":
                 result = "*nothing*"
             # Send results + truncate in case the transcript is longer than 1900 characters
+            # self.trb_embed.description = "**Transcription:\n** ```" + result[:4000] + ("..." if len(result) > 4000 else "") + "```"
+            # await msg.edit(embed=self.trb_embed)
             chunk_size = 1990  # Set the maximum size of each chunk
             chunks = [result[i:i+chunk_size] for i in range(0, len(result), chunk_size)]
             for i,chunk in enumerate(chunks):

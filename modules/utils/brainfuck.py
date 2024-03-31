@@ -47,7 +47,7 @@ def run(code):
             if bf[x]: i = blocks[i]
         i += 1
         iter_count += 1
-        if iter_count > 1000000: # limit long iterations
+        if iter_count > 10000000: # limit long iterations
             result_string += "\n**Iteration overflow! at :** " + str(i) + " \"" + code[i] + "\"\n```" + code[0:i] + "```"
             break
 
