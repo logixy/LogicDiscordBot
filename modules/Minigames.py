@@ -8,6 +8,313 @@ from discord import app_commands, Embed, Colour, Member
 from lib.database import Database
 from modules.Economics import Economy
 
+# ConnectFour logic START
+# Source: https://github.com/jaketanda/jankebot/blob/main/cogs/connectfour.py
+async def confirmation(self, message, sentUser, channel, successMessage = ':white_check_mark: Operation successful', cancelledMessage = ':x: Operation cancelled'):
+    new_message = await channel.send(message)
+
+    await new_message.add_reaction('✅')
+    await new_message.add_reaction('❌')
+
+    def check(reaction, user):
+        return user == sentUser
+
+    reaction = None
+
+    while True:
+        if str(reaction) == '✅':
+            await new_message.clear_reactions()
+            await new_message.edit(content=successMessage)
+            return True
+        elif str(reaction) == '❌':
+            await new_message.clear_reactions()
+            await new_message.edit(content=cancelledMessage)
+            return False
+
+        try:
+            reaction, user = await self.bot.wait_for('reaction_add', timeout = 30.0, check = check)
+            await new_message.remove_reaction(reaction, user)
+        except:
+            await new_message.clear_reactions()
+            await new_message.edit(content=cancelledMessage)
+            return False
+
+def getColorSelection(x):
+    if x == 1:
+        return 'red'
+    elif x == 2:
+        return 'yellow'
+    else:
+        return 'black'
+
+def getColorGrid(x):
+    if x == 1:
+        return 'red'
+    elif x == 2:
+        return 'yellow'
+    elif x == 0:
+        return 'white'
+    else:
+        return 'blue'
+
+def moveSelection(selection, playerNum, spotsToMove):
+    for index, item in enumerate(selection):
+        if item != 0:
+            selection[index] = 0
+            newPos = index + spotsToMove
+            if newPos < 0:
+                newPos = 0
+            elif newPos > 6:
+                newPos = 6
+            selection[newPos] = playerNum
+            break
+    return selection
+
+def isPlacementPossible(selection, grid):
+    for pos, item in enumerate(selection):
+        if item != 0:
+            break
+
+    height = 5
+    while True:
+        if height < 0:
+            break
+        if grid[height][pos] == 0:
+            return True
+        height -= 1
+    return False
+
+def updateGrid(selection, grid):
+    symbol = 0
+    for pos, item in enumerate(selection):
+        if item != 0:
+            symbol = item
+            break
+
+    height = 5
+    while True:
+        if height < 0:
+            break
+        if grid[height][pos] == 0:
+            grid[height][pos] = symbol
+            break
+        height -= 1
+    return grid
+
+def changeSelectionColor(selection):
+    for index, item in enumerate(selection):
+        if item == 1:
+            selection[index] = 0
+            selection[3] = 2
+            break
+        elif item == 2:
+            selection[index] = 0
+            selection[3] = 1
+            break
+    return selection
+
+def checkForWinner(selection, grid):
+    foundWinner = False
+    symbol = 0
+    for pos, item in enumerate(selection):
+        if item != 0:
+            symbol = item
+            break
+
+    height = 5
+    for x in range(5):
+        if grid[x][pos] == symbol and (x == 0 or grid[x-1][pos] == 0):
+            height = x
+            break
+        
+    #check horizontal
+    inarow = 0
+    for x in range(7):
+        if grid[height][x] == symbol:
+            inarow += 1
+            if inarow >= 4:
+                grid[height][x] = 3
+                grid[height][x-1] = 3
+                grid[height][x-2] = 3
+                grid[height][x-3] = 3
+                foundWinner = True
+        else:
+            inarow = 0
+
+    #check vertical
+    inarow = 0
+    for x in range(6):
+        if grid[x][pos] == symbol or grid[x][pos] == 3:
+            inarow += 1
+            if inarow >= 4:
+                grid[x][pos] = 3
+                grid[x-1][pos] = 3
+                grid[x-2][pos] = 3
+                grid[x-3][pos] = 3
+                foundWinner = True
+        else:
+            inarow = 0  
+
+    #check diagonal negative slope
+    inarow = 0
+    for x in range(-5, 6):
+        if height+x >= 0 and height+x <= 5 and pos+x >= 0 and pos+x <= 6 and (grid[height+x][pos+x] == symbol or grid[height+x][pos+x] == 3):
+            inarow += 1
+            if inarow >= 4:
+                grid[height+x][pos+x] = 3
+                grid[height+x-1][pos+x-1] = 3
+                grid[height+x-2][pos+x-2] = 3
+                grid[height+x-3][pos+x-3] = 3
+                foundWinner = True
+        else:
+            inarow = 0  
+
+    #check diagonal positive slope
+    inarow = 0
+    for x in range(-5, 6):
+        if height-x >= 0 and height-x <= 5 and pos+x >= 0 and pos+x <= 6 and (grid[height-x][pos+x] == symbol or grid[height-x][pos+x] == 3):
+            inarow += 1
+            if inarow >= 4:
+                grid[height-x][pos+x] = 3
+                grid[height-x+1][pos+x-1] = 3
+                grid[height-x+2][pos+x-2] = 3
+                grid[height-x+3][pos+x-3] = 3
+                foundWinner = True
+        else:
+            inarow = 0
+        
+    if foundWinner:
+        return symbol
+
+    #check if grid is full (tie scenario)
+    gridNotFull = False
+    for x in grid:
+        for y in x:
+            if y == 0:
+                gridNotFull = True
+                break
+        if gridNotFull:
+            break
+    
+    if not gridNotFull:
+        return 0
+    return 100
+
+def createMessageEmbed(currentPlayer, playerOneDisplayName, playerTwoDisplayName, color, embedColor, firstLine, selection, grid):
+    desc = f'{firstLine}\n\n'
+    
+    if len(selection) > 0:
+        for item in selection:
+            desc += f':{getColorSelection(item)}_circle:'
+        desc+='\n'
+
+    for row in grid:
+        for item in row:
+            desc += f':{getColorGrid(item)}_circle:'
+        desc += '\n'
+
+    embed = Embed(
+        title=f'Connect-4 : {playerOneDisplayName} vs. {playerTwoDisplayName}',
+        description=desc,
+        color = embedColor
+    )
+
+    return embed
+
+async def createMessage(currentPlayer, playerOneDisplayName, playerTwoDisplayName, color, embedColor, firstLine, selection, grid, channel):
+    return await channel.send(embed=createMessageEmbed(currentPlayer, playerOneDisplayName, playerTwoDisplayName, color, embedColor, firstLine, selection, grid))
+
+async def updateMessage(currentPlayer, playerOneDisplayName, playerTwoDisplayName, color, embedColor, firstLine, selection, grid, message):
+    await message.edit(embed=createMessageEmbed(currentPlayer, playerOneDisplayName, playerTwoDisplayName, color, embedColor, firstLine, selection, grid))
+
+async def playConnectFour(self, playerOne, playerTwo, channel):
+    # initialize variables
+
+    if not await confirmation(self, f'<@!{playerTwo.id}>! Do you want to play Connect-Four with {playerOne.display_name}?', playerTwo, channel, cancelledMessage=':x: Connect-Four game cancelled!', successMessage='Starting Connect-Four match'):
+        return
+
+    turn = 1
+    grid = [[0 for x in range(7)] for y in range(6)] 
+
+    selection = [0, 0, 0, 1, 0, 0, 0]
+
+    playerNumber = 1
+    color = 'red'
+    currentPlayer = playerOne
+    embedColor = Colour.red()
+
+    firstLine = f'<@!{str(currentPlayer.id)}>\'s turn :{color}_circle:'
+    new_message = await createMessage(currentPlayer, playerOne.display_name, playerTwo.display_name, color, embedColor, firstLine, selection, grid, channel)
+
+    reaction = None
+
+    await new_message.add_reaction('◀')
+    await new_message.add_reaction('▶')
+    await new_message.add_reaction('✅')
+
+    while True:
+        def check(reaction, user):
+            if turn == 1:
+                return user == playerOne
+            else:
+                return user == playerTwo
+
+        if str(reaction) == '◀':
+            selection = moveSelection(selection, playerNumber, -1)
+        elif str(reaction) == '▶':
+            selection = moveSelection(selection, playerNumber, 1)
+        elif str(reaction) == '✅':
+            if isPlacementPossible(selection, grid):
+                grid = updateGrid(selection, grid)
+                winner = checkForWinner(selection, grid)
+
+                if winner == 100: # no winner
+                    selection = changeSelectionColor(selection)
+                    turn = turn * -1
+                    
+                    if turn == 1:
+                        playerNumber = 1
+                        color = 'red'
+                        currentPlayer = playerOne
+                        embedColor = Colour.red()
+                    else:
+                        playerNumber = 2
+                        color = 'yellow'
+                        currentPlayer = playerTwo
+                        embedColor = Colour.gold()
+                else: # Someone won
+                    break
+        
+        firstLine = f'<@!{str(currentPlayer.id)}>\'s turn :{color}_circle:'
+        await updateMessage(currentPlayer, playerOne.display_name, playerTwo.display_name, color, embedColor, firstLine, selection, grid, new_message)
+            
+        try:
+            reaction, user = await self.bot.wait_for('reaction_add', timeout = 60.0, check = check)
+            await new_message.remove_reaction(reaction, user)
+        except:
+            if playerNumber == 1:
+                winner = -2
+            else:
+                winner = -1
+            break
+        
+    await new_message.clear_reactions()
+    if winner == 1:
+        firstLine = f'**<@!{str(playerOne.id)}> wins!** :red_circle:'
+    elif winner == 2:
+        firstLine = f'**<@!{str(playerTwo.id)}> wins!** :yellow_circle:'
+    elif winner == -1:
+        firstLine = f':alarm_clock: Time\'s up! **<@!{str(playerOne.id)}> wins!** :red_circle:'
+    elif winner == -2:
+        firstLine = f':alarm_clock: Time\'s up! **<@!{str(playerTwo.id)}> wins!** :yellow_circle:'
+    elif winner == 0:
+        firstLine = f'**No one** wins! We have a tie!'
+    else:
+        firstLine = f'Error determining winner but the game is over!'
+
+    await updateMessage(currentPlayer, playerOne.display_name, playerTwo.display_name, color, Colour.blue(), firstLine, [], grid, new_message)
+# ConnectFour logic END
+    
 class Minigames(commands.Cog, name="Minigames"):
     def __init__(self, bot):
         self.bot = bot
@@ -54,9 +361,15 @@ class Minigames(commands.Cog, name="Minigames"):
     @app_commands.command(name = "slots", description = "(100$) Play The Slots Game")
     async def slot_command(self, interaction, 
                         difficulty: Literal["easy", "normal", "hard", "AaAAAaA"] = "normal"):
+        await self.slot_game(interaction, difficulty)
+
+    async def slot_game(self, interaction, difficulty = "normal", contin = False):
         # Money logic
         if (self.economy.get_balance(interaction.user.id) < 100):
-            await interaction.response.send_message("Недостаточно средств! (Необходимо **100$**)", delete_after=10)
+            if not contin:
+                await interaction.response.send_message("Недостаточно средств! (Необходимо **100$**)", delete_after=10)
+            else:
+                await interaction.edit_original_response(content="Недостаточно средств! (Необходимо **100$**)", delete_after=10)
             return
         self.economy.add_money(interaction.user.id, -100)
         
@@ -80,7 +393,10 @@ class Minigames(commands.Cog, name="Minigames"):
         game_matrix = [['🍋', '🍋', '🍋'],
                     ['🍋', '🍋', '🍋'],
                     ['🍋', '🍋', '🍋']]# Start pattern
-        m1 = await interaction.response.send_message(self.render_game(game_matrix)) #, delete_after=game_time+15
+        if not contin:
+            m1 = await interaction.response.send_message(self.render_game(game_matrix)) #, delete_after=game_time+15
+        else:
+            m1 = await interaction.edit_original_response(content=self.render_game(game_matrix)) #, delete_after=game_time+15
         start_time = time.time()
         end_time = start_time+game_time
         speed_modifier = 0.3
@@ -139,7 +455,7 @@ class Minigames(commands.Cog, name="Minigames"):
             prize += multiple_prize
         prizelog.append("─"*35)
         prizelog_text = '\n'.join(prizelog)
-        await interaction.edit_original_response(content=f"{self.render_game(game_matrix)}\n───────\nВаш приз: **{prize}$**\n```{prizelog_text}\n```")
+        await interaction.edit_original_response(content=f"{self.render_game(game_matrix)}\n───────\nВаш приз: **{prize}$**\n```{prizelog_text}\n```") # , view=Buttons(self.bot, difficulty)
         self.economy.add_money(interaction.user.id, prize)
         
         if (prize<500):
@@ -388,6 +704,15 @@ class Minigames(commands.Cog, name="Minigames"):
         await asyncio.sleep(5)
         await guess.delete()
         await interaction.delete_original_response()
+
+    @app_commands.command(name = "connectfour", description = "play connectfour") 
+    async def connectfour_commands(self, interaction, player_two:Member):
+        playerOne = interaction.user
+        try:
+            await interaction.response.send_message('Starting!', ephemeral=True, delete_after=3)
+            await playConnectFour(self, playerOne, player_two, interaction.channel)
+        except:
+            await interaction.response.send_message(':no_entry: Player not found!')
 
 
 async def setup(bot):
