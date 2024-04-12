@@ -46,7 +46,6 @@ class Youchat(commands.Cog, name="Youchat"):
         return text
     
     async def chat(self, interaction, message:str, ephemeral: bool=False):
-        await interaction.response.send_message('Waiting...', ephemeral=ephemeral)
         attempts = 3
         for i in range(attempts):
             you_chat = asyncio.create_task(self.youchat_message(message))
@@ -81,10 +80,33 @@ class Youchat(commands.Cog, name="Youchat"):
     @app_commands.checks.cooldown(1, 60, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.command(name = "chat", description = "Message to GPT chatbot") 
     async def chat_command(self, interaction, message:str, ephemeral: bool=False):
+        await interaction.response.send_message('Waiting...', ephemeral=ephemeral)
         await self.chat(interaction, message, ephemeral)
+        
+    @app_commands.checks.cooldown(1, 60, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.command(name = "summary", description = "Summary")
+    async def s_command(self, interaction, msg_count:app_commands.Range[int, 1, 100] = 20):
+        await interaction.response.send_message('Handling...')
+        messages = []
+        try:
+            async for message in interaction.channel.history(limit=msg_count):
+                if not ( message.author.bot):
+                    messages.append(f"{message.author.display_name}: {message.content}")
+        except Exception as e:
+            await interaction.edit_original_response(content=e)
+        await interaction.edit_original_response(content="end phase #1")
+        t = "Напиши своими словами краткую сводку диалога в несколько преложений представленного ниже:\n"
+        messages = messages[::-1]
+        await interaction.edit_original_response(content="start phase #2")
+        for message in messages:
+            t = t + message + "\n"
+        await interaction.edit_original_response(content=f"end phase #2")
+        await self.chat(interaction, t, False)
+        
     
     @app_commands.checks.cooldown(1, 60, key=lambda i: (i.guild_id, i.user.id))
     async def ai_context(self, interaction, message: Message):
+        await interaction.response.send_message('Wait a Minute...')
         await self.chat(interaction, message.content, False)
 
     async def chat_waiter(self, interaction):
@@ -122,13 +144,17 @@ class Youchat(commands.Cog, name="Youchat"):
             '### :yellow_heart::green_heart::blue_heart::purple_heart::white_heart::heart::orange_heart:',
             '### :orange_heart::yellow_heart::green_heart::blue_heart::purple_heart::white_heart::heart:',
             ],
+            ['https://tenor.com/view/hyptonize-frog-gif-11978351'],
         ])
         curduck = 0
         loop = 0
+        await interaction.edit_original_response(content=ducks[curduck])
+        
         while True:
             current_time = time.time()-0.4
             if current_time - start_dlg >= 0.4:
-                await interaction.edit_original_response(content=ducks[curduck])
+                if len(ducks) > 1:
+                    await interaction.edit_original_response(content=ducks[curduck])
                 if (curduck < len(ducks)-1):
                     curduck += 1
                 else:
