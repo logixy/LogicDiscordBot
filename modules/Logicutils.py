@@ -18,11 +18,16 @@ class Logicutils(commands.Cog, name="Logicutils"):
         await interaction.edit_original_response(content="", embed=self.get_vote_top())
 
     @app_commands.command(name="serverstat", description="Server status")
-    async def serverstat_command(self, interaction: Interaction):
+    async def serverstat_command(self, interaction: Interaction, mode: Literal["compact", "full"] = "compact"):
         await interaction.response.send_message("Loading...")
-        await interaction.edit_original_response(content="", embeds=[self.get_game_servers_status(),
-                                                   self.get_infrastructure_status()])
-    
+        embed = Embed(title="📡 Статус", color=Colour.brand_green())
+        srvsG = self.get_game_servers_status(mode)
+        embed.add_field(name=srvsG.title, value=srvsG.description, inline=True)
+        await interaction.edit_original_response(content="", embed=embed)
+        srvsS = self.get_infrastructure_status(mode)
+        embed.add_field(name=srvsS.title, value=srvsS.description, inline=True)
+        await interaction.edit_original_response(content="", embed=embed)
+
     @app_commands.command(name="weather", description="Weather information for location")
     async def weather_command(self, interaction: Interaction, location: str, count: app_commands.Range[int, 1, 40]=3):
         data = webhandler.get_json(f"https://api.openweathermap.org/data/2.5/forecast?q={location}&cnt={count}&units=metric&appid=SUPERSECRETKEY")
@@ -54,7 +59,7 @@ class Logicutils(commands.Cog, name="Logicutils"):
             
             if (count <= 10):
                 #title
-                we.title=f"⛅Погода ({location}) ({date.strftime('%b %d')})"
+                we.title=f"⛅Погода ({location}) ({date.strftime('%b %d %H:%M')})"
                 we.color = self.get_color_from_temperature(weather['main']['temp'])
                 we.set_thumbnail(url=f"https://openweathermap.org/img/wn/{weather['weather'][0]['icon']}@4x.png")
                 we.set_footer(text="OpenWeatherMap", icon_url="https://openweathermap.org/img/wn/02d.png")
@@ -153,6 +158,18 @@ class Logicutils(commands.Cog, name="Logicutils"):
         embed = Embed(title=f"{user}`s hardware", description=text, color=Colour.brand_red())
         embed.set_thumbnail(url=f"https://logixy.net{data_avatar['url']}")
         await interaction.response.send_message(embed=embed)
+        
+    @app_commands.command(name="user", description="User information")
+    async def user_command(self, interaction: Interaction, user: str):
+        data = webhandler.get_json(f"https://logixy.net/launcher/profileapi.php?mode=user&user={user}")
+        data_avatar = webhandler.get_json(f"https://logixy.net/launcher/profileapi.php?mode=avatar&user={user}")
+        #text = json.dumps(data, indent=2)
+        text = ""
+        for key in data:
+            text = text + f"**{key}**: {data[key]}\n"
+        embed = Embed(title=f"{user}`s info", description=text, color=Colour.brand_red())
+        embed.set_thumbnail(url=f"https://logixy.net{data_avatar['url']}")
+        await interaction.response.send_message(embed=embed)
     
     def get_vote_top(self) -> Embed:
         spisok = webhandler.get_json(
@@ -169,9 +186,9 @@ class Logicutils(commands.Cog, name="Logicutils"):
                 i += 1
         return Embed(title=title, description=text, color=Colour.brand_green())
 
-    def get_game_servers_status(self) -> Embed:
+    def get_game_servers_status(self, mode) -> Embed:
         spisok = webhandler.get_json('https://logixy.net/monAJAX/cache/cache.json')
-        title = "🎮 Статус игровых серверов"
+        title = "🎮 Игровые серверы"
         if(spisok is False):
             text = 'Ошибка соединения API проверки статусов игровых серверов: ' + webhandler.req_error
         else:
@@ -187,12 +204,15 @@ class Logicutils(commands.Cog, name="Logicutils"):
                     if (s_data['ping'] > 450):
                         stat_e = ':brown_circle:'
                     # Progressbar
-                    progressbar_size = 20
+                    progressbar_size = 6
                     progress = round((s_data['online'])/(s_data['slots'])*100)
                     curr_progress_val = progressbar_size*progress//100
                     text_progress_bar = ("█"*curr_progress_val).ljust(progressbar_size, "░")
-                    text += stat_e + "**" + s_name + f"** \n [{text_progress_bar}] (" + str(s_data['online']) + "/" + str(
-                        s_data['slots']) + ")\n"
+                    if (mode == 'compact'):
+                        text += f"{stat_e}**{s_name}** [{s_data['online']}/{s_data['slots']}]\n"
+                    else:
+                        text += stat_e + "**" + s_name + f"** [{text_progress_bar}] (" + str(s_data['online']) + "/" + str(
+                            s_data['slots']) + ")\n"
                 else:
                     text += ":red_circle:**" + s_name + \
                         "** - (**" + s_data['status'] + "**)" + "\n"
@@ -205,8 +225,8 @@ class Logicutils(commands.Cog, name="Logicutils"):
                 str(spisok['record']) + " (" + spisok['timerec'] + ")\n"
         return Embed(title=title, description=text, color=Colour.brand_green())
     
-    def get_infrastructure_status(self) -> Embed:
-        title = "⚙️ Статус серверного оборудования"
+    def get_infrastructure_status(self, mode) -> Embed:
+        title = "⚙️ Оборудование"
         servers_stats = webhandler.get_json('https://status.logixy.net/api')
         errors_data = {
             'Server \#1': 'Недоступен сервер #1! Cкорее всего нет энергообеспечения либо интернет-соединения.',

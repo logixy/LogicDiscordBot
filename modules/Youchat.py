@@ -18,7 +18,7 @@ class Youchat(commands.Cog, name="Youchat"):
 
     async def youchat_message(self, btext):
         proc = await asyncio.create_subprocess_exec(
-                    'python', 'modules/utils/youchat.py', '-t', '18', btext,
+                    'python3', 'modules/utils/youchat.py', '-t', '18', btext,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE)
         stdout, stderr = await proc.communicate()
@@ -46,7 +46,7 @@ class Youchat(commands.Cog, name="Youchat"):
         return text
     
     async def chat(self, interaction, message:str, ephemeral: bool=False):
-        attempts = 3
+        attempts = 5
         for i in range(attempts):
             you_chat = asyncio.create_task(self.youchat_message(message))
             you_waiter = asyncio.ensure_future(self.chat_waiter(interaction)) #Waiting...
@@ -90,6 +90,7 @@ class Youchat(commands.Cog, name="Youchat"):
         messages = []
         try:
             async for message in interaction.channel.history(limit=msg_count):
+                #await interaction.edit_original_response(content="mess: "+message.content)
                 if not ( message.author.bot):
                     messages.append(f"{message.author.display_name}: {message.content}")
         except Exception as e:
@@ -134,17 +135,19 @@ class Youchat(commands.Cog, name="Youchat"):
             '### :hash::hash::hash::hash::regional_indicator_l::regional_indicator_o::regional_indicator_a:',
             '### :hash::hash::hash::regional_indicator_l::regional_indicator_o::regional_indicator_a::regional_indicator_d:',
             '### :hash::hash::regional_indicator_l::regional_indicator_o::regional_indicator_a::regional_indicator_d::regional_indicator_i:',
-            '### :hash::regional_indicator_l::regional_indicator_o::regional_indicator_a::regional_indicator_d::regional_indicator_i::regional_indicator_n:'
-            ],
+            '### :hash::regional_indicator_l::regional_indicator_o::regional_indicator_a::regional_indicator_d::regional_indicator_i::regional_indicator_n:'],
             ['### :heart::orange_heart::yellow_heart::green_heart::blue_heart::purple_heart::white_heart:',
             '### :white_heart::heart::orange_heart::yellow_heart::green_heart::blue_heart::purple_heart:',
             '### :purple_heart::white_heart::heart::orange_heart::yellow_heart::green_heart::blue_heart:', 
             '### :blue_heart::purple_heart::white_heart::heart::orange_heart::yellow_heart::green_heart:',
             '### :green_heart::blue_heart::purple_heart::white_heart::heart::orange_heart::yellow_heart:',
             '### :yellow_heart::green_heart::blue_heart::purple_heart::white_heart::heart::orange_heart:',
-            '### :orange_heart::yellow_heart::green_heart::blue_heart::purple_heart::white_heart::heart:',
-            ],
+            '### :orange_heart::yellow_heart::green_heart::blue_heart::purple_heart::white_heart::heart:'],
             ['https://tenor.com/view/hyptonize-frog-gif-11978351'],
+            ['<:lw_d_p1:970772261319606362><:lw_d_p2:970772260690493520><:lw_d_p2:970772260690493520><:lw_d_p3:970772260782751826>',
+            '<:lw_d_p2:970772260690493520><:lw_d_p2:970772260690493520><:lw_d_p3:970772260782751826><:lw_d_p1:970772261319606362>',
+            '<:lw_d_p2:970772260690493520><:lw_d_p3:970772260782751826><:lw_d_p1:970772261319606362><:lw_d_p2:970772260690493520>',
+            '<:lw_d_p3:970772260782751826><:lw_d_p1:970772261319606362><:lw_d_p2:970772260690493520><:lw_d_p2:970772260690493520>'],
         ])
         curduck = 0
         loop = 0

@@ -125,7 +125,7 @@ class Randstuff(commands.Cog, name="Randstuff"):
         lowered_message = message_text.lower()
         mc_e = Counter(lowered_message).most_common(1)[0] # most common element
 
-        if len(message_text)/100*50 < mc_e[1] and len(message_text) > 2:
+        if len(message_text)/100*50 < mc_e[1] and len(message_text) > 3:
             sta = mc_e[0] * random.randint(10, 30)
             await message.reply(self.upper_case_random_chars(sta))
 
