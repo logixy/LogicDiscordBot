@@ -2,23 +2,37 @@ from asyncio import sleep
 import asyncio
 import time
 from discord.ext import commands
-from discord import app_commands, Embed, Colour, Member, Message, Interaction, \
-                    FFmpegPCMAudio, VoiceState, VoiceClient
+from discord import (
+    app_commands,
+    Embed,
+    Colour,
+    Member,
+    Message,
+    Interaction,
+    FFmpegPCMAudio,
+    VoiceState,
+    VoiceClient,
+)
 import yt_dlp
 
 
 class Playsound(commands.Cog, name="Playsound"):
     def __init__(self, bot):
         self.bot = bot
-        self.vc = {} # {'guild': VoiceClient}
+        self.vc = {}  # {'guild': VoiceClient}
         self.locked = False
-        self.queue = {} # {'guild': [queue]}
-        self.ydl_opts = {'extract_flat': True, 'skip_download': True, 'format': 'bestaudio/best'}
+        self.queue = {}  # {'guild': [queue]}
+        self.ydl_opts = {
+            "extract_flat": True,
+            "skip_download": True,
+            "format": "bestaudio/best",
+            # "cookiefile": "cookies.txt", # If you use local cookies.txt
+        }
 
     @app_commands.command(name="play", description="Play sound from url")
     async def play_command(self, interaction: Interaction, name: str):
         p_embed = Embed(title="🎵 Player", color=Colour.orange())
-        p_embed.description = 'Getting data...'
+        p_embed.description = "Getting data..."
         guild_id = interaction.guild.id
         if guild_id not in self.vc:
             await interaction.response.send_message(embed=p_embed)
@@ -32,7 +46,9 @@ class Playsound(commands.Cog, name="Playsound"):
                 voice_channel = interaction.user.voice.channel
 
             if voice_channel is None:
-                p_embed.description = f"{str(interaction.user.display_name)} is not in a voice channel."
+                p_embed.description = (
+                    f"{str(interaction.user.display_name)} is not in a voice channel."
+                )
                 await interaction.edit_original_response(embed=p_embed)
                 return
 
@@ -40,33 +56,38 @@ class Playsound(commands.Cog, name="Playsound"):
             with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
                 # Init async loop for use yt-dl functions asynchrony
                 loop = asyncio.get_event_loop()
-                if (name.startswith("http")):
+                if name.startswith("http"):
                     # If audio name is url
-                    info = await loop.run_in_executor(None, lambda:ydl.extract_info(name, download=False))
+                    info = await loop.run_in_executor(
+                        None, lambda: ydl.extract_info(name, download=False)
+                    )
                 else:
                     # If audio name is name - search in youtube
-                    info = await loop.run_in_executor(None, lambda: ydl.extract_info(f"ytsearch:{name}", download=False)['entries'][0]) # Search in YouTube
+                    info = await loop.run_in_executor(
+                        None,
+                        lambda: ydl.extract_info(f"ytsearch:{name}", download=False)[
+                            "entries"
+                        ][0],
+                    )  # Search in YouTube
             if info is None:
-                raise Exception('Not found!')
-            
+                raise Exception("Not found!")
+
             if guild_id not in self.queue:
                 self.queue[guild_id] = []
-            
+
             # Add audio to queue
             add_text = ""
-            entries = info['entries'] if 'entries' in info else [info]
-            if 'entries' in info:
+            entries = info["entries"] if "entries" in info else [info]
+            if "entries" in info:
                 # if playlist
                 for i in entries:
-                    title = i['title'] if 'title' in i else i['url']
-                    self.queue[guild_id].append({'title': title, 
-                                                'url': i['url']})
+                    title = i["title"] if "title" in i else i["url"]
+                    self.queue[guild_id].append({"title": title, "url": i["url"]})
                     add_text += f"➕ {title}\n"
             else:
                 # if single track
-                url = info['original_url'] if 'original_url' in info else info['url']
-                self.queue[guild_id].append({'title': info['title'], 
-                                             'url': url})
+                url = info["original_url"] if "original_url" in info else info["url"]
+                self.queue[guild_id].append({"title": info["title"], "url": url})
                 add_text += f"➕ {info['title']}\n"
             p_embed.description = add_text[:1999] + "Added to the queue."
             await interaction.edit_original_response(embed=p_embed)
@@ -79,11 +100,11 @@ class Playsound(commands.Cog, name="Playsound"):
                 await self.play(interaction, p_embed)
                 # await interaction.delete_original_response()
         except Exception as e:
-            e = "Error: "+str(e)
+            e = "Error: " + str(e)
             # Replace special chars (colors) in yt-dlp error messages
-            e = e.replace("\u001b\u005b\u0030\u003b\u0033\u0031\u006d", '**')
-            e = e.replace("\u001b\u005b\u0030\u006d", '**')
-            e = e.replace("\u001b\u005b\u0030\u003b\u0039\u0034\u006d", '**')
+            e = e.replace("\u001b\u005b\u0030\u003b\u0033\u0031\u006d", "**")
+            e = e.replace("\u001b\u005b\u0030\u006d", "**")
+            e = e.replace("\u001b\u005b\u0030\u003b\u0039\u0034\u006d", "**")
             p_embed.description = str(e)
             await interaction.edit_original_response(embed=p_embed)
 
@@ -97,20 +118,20 @@ class Playsound(commands.Cog, name="Playsound"):
             await self.vc[guild_id].disconnect()
             if guild_id in self.vc:
                 self.vc.pop(guild_id)
-            p_embed.description = 'Stopped'
+            p_embed.description = "Stopped"
         else:
-            p_embed.description = 'Player is not connected'
+            p_embed.description = "Player is not connected"
         await interaction.response.send_message(embed=p_embed, delete_after=5)
-    
+
     @app_commands.command(name="skip", description="Skip current track")
     async def skip_command(self, interaction: Interaction):
         p_embed = Embed(title="🎵 Player", color=Colour.random())
         guild_id = interaction.guild.id
         if guild_id in self.vc:
             self.vc[guild_id].pause()
-            p_embed.description = 'Skipped currently playing track'
+            p_embed.description = "Skipped currently playing track"
         else:
-            p_embed.description = 'Player is not connected'
+            p_embed.description = "Player is not connected"
         await interaction.response.send_message(embed=p_embed, delete_after=5)
 
     @app_commands.command(name="queue", description="Show audio player queue")
@@ -125,7 +146,6 @@ class Playsound(commands.Cog, name="Playsound"):
             text = "Queue is empty."
         p_embed.description = text[:1999]
         await interaction.response.send_message(embed=p_embed, delete_after=60)
-                
 
     async def play(self, interaction: Interaction, p_embed: Embed):
         guild_id = interaction.guild.id
@@ -134,7 +154,7 @@ class Playsound(commands.Cog, name="Playsound"):
             await interaction.delete_original_response()
             while len(self.queue[guild_id]) > 0:
                 sound = self.queue[guild_id].pop(0)
-                title = sound['title']
+                title = sound["title"]
                 p_embed.description = f"Loading **{title}**..."
                 p_embed.set_thumbnail(url=None)
                 sound_mess = await interaction.channel.send(embed=p_embed)
@@ -143,31 +163,41 @@ class Playsound(commands.Cog, name="Playsound"):
                     with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
                         # Init async loop for use yt-dl functions asynchrony
                         loop = asyncio.get_event_loop()
-                        info = await loop.run_in_executor(None, lambda:ydl.extract_info(sound['url']))
+                        info = await loop.run_in_executor(
+                            None, lambda: ydl.extract_info(sound["url"])
+                        )
                 except Exception as e:
                     print("[Playsound d2] Error: %s" % e)
                     e = str(e)
-                    e = e.replace("\u001b\u005b\u0030\u003b\u0033\u0031\u006d", '**')
-                    e = e.replace("\u001b\u005b\u0030\u006d", '**')
-                    e = e.replace("\u001b\u005b\u0030\u003b\u0039\u0034\u006d", '**')
+                    e = e.replace("\u001b\u005b\u0030\u003b\u0033\u0031\u006d", "**")
+                    e = e.replace("\u001b\u005b\u0030\u006d", "**")
+                    e = e.replace("\u001b\u005b\u0030\u003b\u0039\u0034\u006d", "**")
                     p_embed.description = e
                     await sound_mess.edit(embed=p_embed)
                     await sleep(3)
                     await sound_mess.delete()
                     continue
-                
-                title = info['title'] if 'title' in info else "-"
-                if 'url' not in info:
+
+                title = info["title"] if "title" in info else "-"
+                if "url" not in info:
                     continue
-                sound_url = info['url']
-                image = info['thumbnail'] if 'thumbnail' in info else None
-                duration = info['duration'] if 'duration' in info else 0
+                sound_url = info["url"]
+                image = info["thumbnail"] if "thumbnail" in info else None
+                duration = info["duration"] if "duration" in info else 0
                 start_time = time.time()
-                progressbar_size = 12 # Max ▱
-                mess_lifetime = 14*60 # Webhook expired after 15 minutes (we re-send message)
+                progressbar_size = 12  # Max ▱
+                mess_lifetime = (
+                    14 * 60
+                )  # Webhook expired after 15 minutes (we re-send message)
                 channel = self.vc[guild_id].channel.name
-                FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5','options': '-vn'}
-                self.vc[guild_id].play(FFmpegPCMAudio(sound_url, executable="ffmpeg", **FFMPEG_OPTIONS), after=None)
+                FFMPEG_OPTIONS = {
+                    "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
+                    "options": "-vn",
+                }
+                self.vc[guild_id].play(
+                    FFmpegPCMAudio(sound_url, executable="ffmpeg", **FFMPEG_OPTIONS),
+                    after=None,
+                )
                 curr_text = f"Playing **{title}** in **{channel}**"
                 p_embed.description = curr_text
                 p_embed.set_thumbnail(url=image)
@@ -178,10 +208,16 @@ class Playsound(commands.Cog, name="Playsound"):
                         # Draw progress bar ▰▰▰▰▰▰▱▱▱▱▱▱ 50% (if duration is not 0)
                         # And song duration is not greater than mess_lifetime
                         if duration != 0 and duration <= mess_lifetime:
-                            progress = round((time.time()-start_time)/(duration)*100)
-                            curr_progress_val = progressbar_size*progress//100
-                            text_progress_bar = ("▰"*curr_progress_val).ljust(progressbar_size, "▱")
-                            p_embed.description = f"{curr_text}\n {text_progress_bar} {progress}%"
+                            progress = round(
+                                (time.time() - start_time) / (duration) * 100
+                            )
+                            curr_progress_val = progressbar_size * progress // 100
+                            text_progress_bar = ("▰" * curr_progress_val).ljust(
+                                progressbar_size, "▱"
+                            )
+                            p_embed.description = (
+                                f"{curr_text}\n {text_progress_bar} {progress}%"
+                            )
                             await sound_mess.edit(embed=p_embed)
 
                         await sleep(1)
@@ -193,13 +229,15 @@ class Playsound(commands.Cog, name="Playsound"):
                 self.vc.pop(guild_id)
 
     @commands.Cog.listener("on_voice_state_update")
-    async def on_voice_state_update(self, member: Member, before: VoiceState, after: VoiceState):
+    async def on_voice_state_update(
+        self, member: Member, before: VoiceState, after: VoiceState
+    ):
         if member != self.bot.user:
-           return
+            return
 
         vc = member.guild.voice_client
 
-        if (isinstance(vc, VoiceClient)):
+        if isinstance(vc, VoiceClient):
             print("Re-connect audio player")
             # If the voice was intentionally paused don't resume it for no reason
             if vc.is_paused():
@@ -207,14 +245,14 @@ class Playsound(commands.Cog, name="Playsound"):
             # If the voice isn't playing anything there is no sense in trying to resume
             if not vc.is_playing():
                 return
-            
+
             await asyncio.sleep(0.5)  # wait a moment for it to set in
             self.locked = True
             vc.pause()
             await asyncio.sleep(0.5)
             vc.resume()
             self.locked = False
-    
+
     @commands.Cog.listener("on_resume")
     async def on_resume(self):
         print("Reconnected!")

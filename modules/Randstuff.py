@@ -1,3 +1,4 @@
+import asyncio
 import random
 from collections import Counter
 from urllib.parse import urlparse
@@ -9,14 +10,22 @@ from modules.utils import webhandler
 class Randstuff(commands.Cog, name="Randstuff"):
     def __init__(self, bot):
         self.bot = bot
+        self.embed = Embed(
+          title="RandStuff",
+          description="content",
+          colour=Colour.gold())
 
     @app_commands.command(name="joke", description="Generate random joke")
     async def joke_command(self, interraction: Interaction):
-        await interraction.response.send_message(self.get_joke())
+        self.embed.title = "Анекдот"
+        self.embed.description = self.get_joke()
+        await interraction.response.send_message(embed=self.embed)
 
     @app_commands.command(name="fact", description="Generate random fact")
     async def fact_command(self, interraction: Interaction):
-        await interraction.response.send_message(self.get_fact())
+        self.embed.title = "Факт"
+        self.embed.description = self.get_fact()
+        await interraction.response.send_message(embed=self.embed)
     
     @app_commands.command(name="where", description="Where?")
     async def where_command(self, interraction: Interaction):
@@ -32,17 +41,22 @@ class Randstuff(commands.Cog, name="Randstuff"):
 
     @app_commands.command(name="randnick", description="Generates a random nick for you")
     async def randnick_command(self, interaction: Interaction):
-        await interaction.response.send_message("Generating...")
+        self.embed.title = "Паспортный стол (наверное)"
+        self.embed.description = random.choice(["Придумываем...",
+           "Вычисляем вычисления...", "Спрашиваем мимопроходящих...",
+           "Завём тётю Галю...", "Делаем серьёзный вид..."])
+        await interaction.response.send_message(embed=self.embed)
+        asyncio.sleep(3)
         newNick = self.get_rand_nickname()
         try:
             await interaction.user.edit(nick=newNick)
         except:
             msg = 'Мы подобрали Вам новое имя: **' + newNick + '**\n' + \
                 'Но, службы свыше запретили нам вмешиваться. Так что сменить данные вы можете вручную.'
-            await interaction.edit_original_response(content=msg)
         else:
             msg = 'Добро пожаловать, **' + newNick + '**, которого мы никогда не видели :face_with_hand_over_mouth:\n'
-            await interaction.edit_original_response(content=msg)
+        self.embed.description = msg
+        await interaction.edit_original_response(embed=self.embed)
     
     @app_commands.command(name = "google", description = "Search in google.")
     async def google_command(self, interaction, search_msg:str):

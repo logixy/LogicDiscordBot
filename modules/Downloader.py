@@ -36,6 +36,7 @@ class Downloader(commands.Cog, name="Downloader"):
         tmp_dir = "tmp"
         r_filename = str(uuid.uuid4())
         ydl_opts = {
+            # "cookiefile": "cookies.txt", # If you use local cookies
             "verbose": True,
             "format": "bestaudio/best",
             "outtmpl": f"{tmp_dir}/{r_filename}.%(ext)s",  # {tmp_dir}/%(title)s.%(ext)s
@@ -98,7 +99,7 @@ class Downloader(commands.Cog, name="Downloader"):
                     proc = await asyncio.create_subprocess_exec(
                         yt_dlp_addr,
                         "-f",
-                        "b[filesize_approx<=25M] / b[filesize<=25M] / [tbr<600][width<500] / w / bestvideo[filesize_approx<=25M]+bestaudio",
+                        "b[filesize_approx<=25M] / b[filesize<=25M] / [tbr<600][width<500] / w / bestvideo[filesize_approx<=25M]+bestaudio",  # b[filesize_approx<=25M] / b[filesize<=25M] / [tbr<600][width<500] / w / bestvideo[filesize_approx<=25M]+bestaudio
                         "-S",
                         "res,ext:mp4:m4a",
                         "--recode",
@@ -108,6 +109,8 @@ class Downloader(commands.Cog, name="Downloader"):
                         "--progress",
                         "--newline",
                         "--embed-metadata",
+                        #"--cookies", # If use your cookies for downloader 
+                        #"cookies.txt",
                         "--output",
                         f"{tmp_dir}/{r_filename}.{ext}",
                         url,  # f"{tmp_dir}/{r_filename}.%(ext)s"
@@ -125,6 +128,8 @@ class Downloader(commands.Cog, name="Downloader"):
                         "--progress",
                         "--newline",
                         "--embed-metadata",
+                        #"--cookies", # If use your cookies for downloader 
+                        #"cookies.txt",
                         "--output",
                         f"{tmp_dir}/{r_filename}.{ext}",
                         url,  # f"{tmp_dir}/{r_filename}.%(ext)s"
@@ -167,10 +172,8 @@ class Downloader(commands.Cog, name="Downloader"):
                         title += f"\n\n {info['uploader']}"
                     if "album" in info:
                         title += f" • {info['album']}"
-                    if "album" in info:
-                        title += f" • {info['album']}"
-                    if "release_year" in info:
-                        title += f" • {info['release_year']}"
+                    if "release_year" in info and info["release_year"] != None:
+                        title += f" • {info['release_year']} "
                     dl_embed.description = title
                     dl_embed.title = None
                     await interaction.edit_original_response(
