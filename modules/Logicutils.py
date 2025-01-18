@@ -263,6 +263,25 @@ class Logicutils(commands.Cog, name="Logicutils"):
         if lowered_message in ['статуссерверов', 'статус серверов', 'статус сервера', 'server stat', 'статистика сервера']:
             await message.reply(embeds=[self.get_game_servers_status(),
                                        self.get_infrastructure_status()])
+            
+    @commands.Cog.listener("on_message")
+    async def swear_filter(self, message: Message):
+        channel = message.channel
+        swear_words = open('swear_words.txt', 'r').read().split("|")
+        if any(word in message.content.lower() for word in swear_words) and (not channel.nsfw):
+            # Form embed with user message replacd swear words to &!@#$
+            message_text = message.content
+            for word in swear_words:
+                message_text = message_text.replace(word, '&!@#$')
+                
+            e = Embed(color=Colour.dark_purple(), description=message_text)
+            e.set_footer(text=message.author.display_name, icon_url=message.author.avatar.url)
+            await channel.send(embed=e)
+
+            # Delete original message
+            await message.delete()
+        
+        
 
 async def setup(bot):
     await bot.add_cog(Logicutils(bot))
