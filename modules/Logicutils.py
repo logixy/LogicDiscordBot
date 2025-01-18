@@ -1,5 +1,6 @@
 import asyncio
 import json
+import re
 from typing import Literal
 from discord.ext import commands
 from discord import app_commands, Embed, Colour, Interaction, Message
@@ -11,6 +12,7 @@ from collections import Counter
 class Logicutils(commands.Cog, name="Logicutils"):
     def __init__(self, bot):
         self.bot = bot
+        self.swear_words = open('swear_words.txt', 'r').read().split("|")
 
     @app_commands.command(name="votetop", description="Get the top voters")
     async def votetop_command(self, interaction: Interaction):
@@ -267,12 +269,13 @@ class Logicutils(commands.Cog, name="Logicutils"):
     @commands.Cog.listener("on_message")
     async def swear_filter(self, message: Message):
         channel = message.channel
-        swear_words = open('swear_words.txt', 'r').read().split("|")
+        swear_words = self.swear_words
         if any(word in message.content.lower() for word in swear_words) and (not channel.nsfw):
             # Form embed with user message replacd swear words to &!@#$
             message_text = message.content
             for word in swear_words:
-                message_text = message_text.replace(word, '&!@#$')
+                # Case insensitive replacement
+                message_text = re.sub(re.compile(re.escape(word), re.IGNORECASE), '&!@#$', message_text)
                 
             e = Embed(color=Colour.dark_purple(), description=message_text)
             e.set_footer(text=message.author.display_name, icon_url=message.author.avatar.url)
