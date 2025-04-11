@@ -16,7 +16,7 @@ class R34(commands.Cog, name="R34"):
     async def r34_command(self, interaction: Interaction, tags:str, count:int = 10, ai:bool = False):
         tags_s = tags.split()
         if ai == False:
-            tags_s.append("-ai_generated")
+            tags_s.append("-ai_*")
         if 'video' in tags:
             video = True
             if count > 5: count = 5
