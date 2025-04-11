@@ -13,8 +13,10 @@ class R34(commands.Cog, name="R34"):
 
     @app_commands.checks.cooldown(1, 3, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.command(name = "r34", description = "rule34 imgator", nsfw=True)
-    async def r34_command(self, interaction: Interaction, tags:str, count:int = 10):
+    async def r34_command(self, interaction: Interaction, tags:str, count:int = 10, ai:bool = False):
         tags_s = tags.split()
+        if ai == False:
+            tags_s.append("-ai_generated")
         if 'video' in tags:
             video = True
             if count > 5: count = 5
