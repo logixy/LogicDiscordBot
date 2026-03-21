@@ -13,13 +13,13 @@ class Esoterics(commands.Cog, name="Esoterics"):
     @app_commands.command(name = "horoscope", description = "Get a horoscope today.")
     async def horoscope_command(self, interaction: Interaction,
         sign: Literal["aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"]):
-        data = webhandler.get_json(f"https://horoscopes.rambler.ru/api/front/v1/horoscope/today/{sign}/")
+        data = webhandler.get_json(f"https://horoscopes.rambler.ru/api/front/v3/horoscope/general/{sign}/today/")
         embed = Embed(
-          title="☯️ "+data['h1'],
-          description=data['text'],
+          title="☯️ "+data['content']['title'],
+          description=data['content']['text'][0]['content'],
           colour=Colour.dark_purple(),
           timestamp=datetime.datetime.now())
-        embed.set_footer(text=data['seo_text'])
+        embed.set_footer(text=data['meta']['seo_text'])
         await interaction.response.send_message(embed=embed) # , delete_after=60
 
     @app_commands.checks.cooldown(1, 30, key=lambda i: (i.guild_id, i.user.id))

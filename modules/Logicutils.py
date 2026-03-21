@@ -5,8 +5,11 @@ from typing import Literal
 from discord.ext import commands
 from discord import app_commands, Embed, Colour, Interaction, Message
 from modules.utils import webhandler
+from config import openweather_appid
 from datetime import datetime
 from collections import Counter
+import os
+import psutil
 
 
 class Logicutils(commands.Cog, name="Logicutils"):
@@ -23,16 +26,32 @@ class Logicutils(commands.Cog, name="Logicutils"):
     async def serverstat_command(self, interaction: Interaction, mode: Literal["compact", "full"] = "compact"):
         await interaction.response.send_message("Loading...")
         embed = Embed(title="📡 Статус", color=Colour.brand_green())
-        srvsG = self.get_game_servers_status(mode)
-        embed.add_field(name=srvsG.title, value=srvsG.description, inline=True)
-        await interaction.edit_original_response(content="", embed=embed)
-        srvsS = self.get_infrastructure_status(mode)
-        embed.add_field(name=srvsS.title, value=srvsS.description, inline=True)
-        await interaction.edit_original_response(content="", embed=embed)
+        try:
+            srvsG = self.get_game_servers_status(mode)
+            embed.add_field(name=srvsG.title, value=srvsG.description, inline=True)
+            await interaction.edit_original_response(content="", embed=embed)
+        except Exception:
+            pass
+
+        try:
+            srvsS = self.get_infrastructure_status(mode)
+            embed.add_field(name=srvsS.title, value=srvsS.description, inline=True)
+            await interaction.edit_original_response(content="", embed=embed)
+        except Exception:
+            pass
+
+
+        try:
+            srvsC = self.get_current_server_status()
+            embed.add_field(name=srvsC.title, value=srvsC.description, inline=False)
+            await interaction.edit_original_response(content="", embed=embed)
+        except Exception:
+            pass
+
 
     @app_commands.command(name="weather", description="Weather information for location")
     async def weather_command(self, interaction: Interaction, location: str, count: app_commands.Range[int, 1, 40]=3):
-        data = webhandler.get_json(f"https://api.openweathermap.org/data/2.5/forecast?q={location}&cnt={count}&units=metric&appid=SUPERSECRETKEY")
+        data = webhandler.get_json(f"https://api.openweathermap.org/data/2.5/forecast?q={location}&cnt={count}&units=metric&appid={openweather_appid}")
         text = json.dumps(data, indent=2)
         wes = []
         for i in range(count):
@@ -46,19 +65,19 @@ class Logicutils(commands.Cog, name="Logicutils"):
             deg = wind['deg']
             text = weather['weather'][0]['description'].title()
             date = datetime.fromtimestamp(weather['dt'])
-            
+
             #temperature
             text += "\n" + f"{weather['main']['temp_min']} — {weather['main']['temp_max']}°C"
-            
+
             #wind
             arrows = ["↓", "↙", "←", "↖", "↑", "↗", "→", "↘"]
             type = int(((deg)%360)/45)
             text += "\n" + arrows[type] + f" {wind['speed']} — {wind['gust']} m/s"
-            
+
             #pressure and humidity
             text += f"\n {weather['main']['pressure']} mmHg | {weather['main']['humidity']}%"
-            
-            
+
+
             if (count <= 10):
                 #title
                 we.title=f"⛅Погода ({location}) ({date.strftime('%b %d %H:%M')})"
@@ -82,17 +101,17 @@ class Logicutils(commands.Cog, name="Logicutils"):
                     max_temp = 0
                     icons = []
                     cur_date = date
-                
+
                 wem.add_field(name=date.strftime('%H:%M'), value=text, inline=True)
-                
+
                 icons.append(weather['weather'][0]['icon'])
-                
+
                 most_pupular_icon = Counter(icons).most_common(1)[0][0]
                 wem.set_thumbnail(url=f"https://openweathermap.org/img/wn/{most_pupular_icon}@4x.png")
                 if (max_temp < weather['main']['temp']):
                     max_temp = weather['main']['temp']
-                
-                
+
+
                 if (i+1 == count):
                     wem.title=f"⛅Погода ({location}) ({date.strftime('%b %d')})"
                     wem.color = self.get_color_from_temperature(max_temp)
@@ -110,7 +129,7 @@ class Logicutils(commands.Cog, name="Logicutils"):
             {'temperature': 20, 'color': 'FFFF00'},   # Yellow
             {'temperature': 30, 'color': 'FF0000'},   # Red
         ]
-        
+
         # Search for the corresponding color for a given temperature
         for i in range(len(color_ranges)):
             if temperature < color_ranges[i]['temperature']:
@@ -123,19 +142,19 @@ class Logicutils(commands.Cog, name="Logicutils"):
                     next_temp = color_ranges[i]['temperature']
                     next_color = color_ranges[i]['color']
                     ratio = (temperature - prev_temp) / (next_temp - prev_temp)
-                    
+
                     # Calculation of an intermediate color
                     r = int((1 - ratio) * int(prev_color[0:2], 16) + ratio * int(next_color[0:2], 16))
                     g = int((1 - ratio) * int(prev_color[2:4], 16) + ratio * int(next_color[2:4], 16))
                     b = int((1 - ratio) * int(prev_color[4:6], 16) + ratio * int(next_color[4:6], 16))
-                    
+
                     hex_color = '{:02X}{:02X}{:02X}'.format(r, g, b)
-                    
+
                     return Colour(int(hex_color, 16))
-        
+
         # If temp very hot - return latest
-        return Colour(int(color_ranges[-1]['color'], 16))  
-        
+        return Colour(int(color_ranges[-1]['color'], 16))
+
     def get_color_from_temperature2(self, temperature):
         color_ranges = [
             (-20, Colour.dark_blue()),    # Blue
@@ -144,38 +163,38 @@ class Logicutils(commands.Cog, name="Logicutils"):
             (20, Colour.yellow()),   # Yellow
             (30, Colour.red())    # Red
         ]
-        
+
         for temp, color in color_ranges:
             if temperature < temp:
                 return color
-        
+
         return color_ranges[-1][1]
 
     @app_commands.command(name="hardware", description="User hardware information")
     async def hardware_command(self, interaction: Interaction, user: str):
-        data = webhandler.get_json(f"https://logixy.net/launcher/profileapi.php?mode=hw&user={user}")
-        data_avatar = webhandler.get_json(f"https://logixy.net/launcher/profileapi.php?mode=avatar&user={user}")
+        data = webhandler.get_json(f"https://www.logixy.net/launcher/profileapi.php?mode=hw&user={user}")
+        data_avatar = webhandler.get_json(f"https://www.logixy.net/launcher/profileapi.php?mode=avatar&user={user}")
         #text = json.dumps(data, indent=2)
         text = f"GPU: **{data['gpu']}**\nRAM: **{data['ram']}GB**\nCPU: **{data['physicalProcessors']} cores {data['logicalProcessors']} threads | {data['processorMaxFreq']}Ghz**"
         embed = Embed(title=f"{user}`s hardware", description=text, color=Colour.brand_red())
         embed.set_thumbnail(url=f"https://logixy.net{data_avatar['url']}")
         await interaction.response.send_message(embed=embed)
-        
+
     @app_commands.command(name="user", description="User information")
     async def user_command(self, interaction: Interaction, user: str):
-        data = webhandler.get_json(f"https://logixy.net/launcher/profileapi.php?mode=user&user={user}")
-        data_avatar = webhandler.get_json(f"https://logixy.net/launcher/profileapi.php?mode=avatar&user={user}")
+        data = webhandler.get_json(f"https://www.logixy.net/launcher/profileapi.php?mode=user&user={user}")
+        data_avatar = webhandler.get_json(f"https://www.logixy.net/launcher/profileapi.php?mode=avatar&user={user}")
         #text = json.dumps(data, indent=2)
         text = ""
         for key in data:
             text = text + f"**{key}**: {data[key]}\n"
         embed = Embed(title=f"{user}`s info", description=text, color=Colour.brand_red())
-        embed.set_thumbnail(url=f"https://logixy.net{data_avatar['url']}")
+        embed.set_thumbnail(url=f"https://www.logixy.net{data_avatar['url']}")
         await interaction.response.send_message(embed=embed)
-    
+
     def get_vote_top(self) -> Embed:
         spisok = webhandler.get_json(
-            'https://logixy.net/launcher/tableTopVote.php?mode=api')
+            'https://www.logixy.net/launcher/tableTopVote.php?mode=api')
         title = "🏆 Топ голосующих"
         if(spisok is False):
             text = 'Ошибка соединения с API: ' + webhandler.req_error
@@ -189,7 +208,7 @@ class Logicutils(commands.Cog, name="Logicutils"):
         return Embed(title=title, description=text, color=Colour.brand_green())
 
     def get_game_servers_status(self, mode) -> Embed:
-        spisok = webhandler.get_json('https://logixy.net/monAJAX/cache/cache.json')
+        spisok = webhandler.get_json('https://www.logixy.net/monAJAX/cache/cache.json')
         title = "🎮 Игровые серверы"
         if(spisok is False):
             text = 'Ошибка соединения API проверки статусов игровых серверов: ' + webhandler.req_error
@@ -226,7 +245,7 @@ class Logicutils(commands.Cog, name="Logicutils"):
             text += "**Рекорд:** " + \
                 str(spisok['record']) + " (" + spisok['timerec'] + ")\n"
         return Embed(title=title, description=text, color=Colour.brand_green())
-    
+
     def get_infrastructure_status(self, mode) -> Embed:
         title = "⚙️ Оборудование"
         servers_stats = webhandler.get_json('https://status.logixy.net/api')
@@ -250,41 +269,51 @@ class Logicutils(commands.Cog, name="Logicutils"):
                 server['name'] + "** - " + server['available'] + "\n"
         text += "\n" + err_data + "\nСтраница мониторинга проекта <https://status.logixy.net/>"
         return Embed(title=title, description=text, color=Colour.brand_green())
-    
+
+    def get_current_server_status(self):
+        title = "📊 Основной сервер"
+        cpu_usage = psutil.cpu_percent(4)
+        ram_total = round(psutil.virtual_memory()[0]/1000000000, 2)
+        ram_used  = round(psutil.virtual_memory()[3]/1000000000, 2)
+        cpu_temp  = psutil.sensors_temperatures()['coretemp'][0].current
+
+        text = f"**CPU**: {cpu_usage}% T:({cpu_temp}°C)\n" + \
+               f"**RAM**: {ram_used}/{ram_total}GB"
+        return Embed(title=title, description=text, color=Colour.brand_green())
+
     @commands.Cog.listener("on_message")
     async def chat_message(self, message: Message):
         if (message.author.bot):
             return
-        
+
         message_text = message.content
         lowered_message = message_text.lower()
 
-        if lowered_message in ['топ голосующих', 'топ голосов', 'топ голосовавших']: 
+        if lowered_message in ['топ голосующих', 'топ голосов', 'топ голосовавших']:
             await message.reply(embed=self.get_vote_top())
 
         if lowered_message in ['статуссерверов', 'статус серверов', 'статус сервера', 'server stat', 'статистика сервера']:
             await message.reply(embeds=[self.get_game_servers_status(),
                                        self.get_infrastructure_status()])
-            
+
     @commands.Cog.listener("on_message")
     async def swear_filter(self, message: Message):
         channel = message.channel
         swear_words = self.swear_words
-        if any(word in message.content.lower() for word in swear_words) and (not channel.nsfw):
-            # Form embed with user message replacd swear words to &!@#$
+        if any(word.lower() == w.lower() for w in message.content.lower().split() for word in swear_words) and (not channel.nsfw):
+            # Формируем embed с заменой только полных совпадений слов на &!@#$
             message_text = message.content
             for word in swear_words:
-                # Case insensitive replacement
-                message_text = re.sub(re.compile(re.escape(word), re.IGNORECASE), '&!@#$', message_text)
-                
+                # Используем \b для границ слова, чтобы заменить только полные совпадения, игнорируя регистр
+                pattern = re.compile(rf'\b{re.escape(word)}\b', re.IGNORECASE)
+                message_text = pattern.sub('&!@#$', message_text)
+
             e = Embed(color=Colour.dark_purple(), description=message_text)
             e.set_footer(text=message.author.display_name, icon_url=message.author.avatar.url)
             await channel.send(embed=e)
 
-            # Delete original message
+            # Удаляем оригинальное сообщение
             await message.delete()
-        
-        
 
 async def setup(bot):
     await bot.add_cog(Logicutils(bot))

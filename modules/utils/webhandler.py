@@ -28,6 +28,15 @@ def get_json(url:str) -> str:
     except ValueError as e:
         return ""
 
+def post_json_data(url: str, data=None):
+    headers = {'X-Requested-With': 'XMLHttpRequest',
+               'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0'}
+    try:
+        req = post(url, data=data, headers=headers, timeout=10)
+        return json.loads(req.text)
+    except ValueError:
+        return ""
+
 def post_json(url:str) -> str:
     try:
         return json.loads(post(url).text)

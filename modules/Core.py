@@ -3,11 +3,12 @@ import datetime
 import os
 import time
 from discord.ext import commands
-from discord import app_commands, Embed, Colour, Interaction
+from discord import app_commands, Embed, Colour, Interaction, Streaming
 from typing import Literal
 from lib.database import Database
 
 # Main logic
+
 
 class Core(commands.Cog, name="Core"):
     def __init__(self, bot):
@@ -17,21 +18,27 @@ class Core(commands.Cog, name="Core"):
         bot.tree.on_error = self.on_app_command_error
 
     @app_commands.checks.cooldown(1, 3, key=lambda i: (i.guild_id, i.user.id))
-    @app_commands.command(name = "ping", description = "Ping the bot")
-    async def ping_command(self, interaction: Interaction, ephemeral: bool=True):
-        await interaction.response.send_message(f"Pong! Latency: {round(self.bot.latency*1000)}ms", ephemeral=ephemeral)
+    @app_commands.command(name="ping", description="Ping the bot")
+    async def ping_command(self, interaction: Interaction, ephemeral: bool = True):
+        await interaction.response.send_message(
+            f"Pong! Latency: {round(self.bot.latency*1000)}ms", ephemeral=ephemeral
+        )
 
     @app_commands.command(name="dbs", description="Database status")
     async def dbt_command(self, interaction):
-        await interaction.response.send_message("Stonks:\n```\n.\n"+self.db.requests_table()+"\n```")
+        await interaction.response.send_message(
+            "Stonks:\n```\n.\n" + self.db.requests_table() + "\n```"
+        )
 
-    @app_commands.command(name = "extensions", description = "List of loaded extensions")
-    async def extensions_command(self, interaction: Interaction, ephemeral: bool=False):
+    @app_commands.command(name="extensions", description="List of loaded extensions")
+    async def extensions_command(
+        self, interaction: Interaction, ephemeral: bool = False
+    ):
         title_text = "📃 Modules"
         text = ""
-        for filename in os.listdir('./modules'):
-            if filename.endswith('.py') or filename.endswith('.py.disabled'):
-                if filename.endswith('.py'):
+        for filename in os.listdir("./modules"):
+            if filename.endswith(".py") or filename.endswith(".py.disabled"):
+                if filename.endswith(".py"):
                     filename = filename[:-3]
                 else:
                     filename = filename[:-12]
@@ -39,7 +46,7 @@ class Core(commands.Cog, name="Core"):
                 loaded = False
 
                 try:
-                    await self.bot.load_extension(f'modules.{filename}')
+                    await self.bot.load_extension(f"modules.{filename}")
                 except commands.ExtensionAlreadyLoaded:
                     text += f"**LOADED**"
                     loaded = True
@@ -50,12 +57,13 @@ class Core(commands.Cog, name="Core"):
                     await self.bot.unload_extension(f"modules.{filename}")
                 text += "]\n "
                 if loaded:
-                    text += self.get_cog_commands(filename)   
+                    text += self.get_cog_commands(filename)
         embed = Embed(
-          title=title_text,
-          description=text,
-          colour=Colour.green(),
-          timestamp=datetime.datetime.now())
+            title=title_text,
+            description=text,
+            colour=Colour.green(),
+            timestamp=datetime.datetime.now(),
+        )
         await interaction.response.send_message(embed=embed, ephemeral=ephemeral)
 
     def get_cog_commands(self, cogname) -> str:
@@ -65,15 +73,26 @@ class Core(commands.Cog, name="Core"):
             text += f"`/{com.name}` "
         for com in cog.get_commands():
             text += f"`{self.bot.command_prefix}{com.name}` "
-        return text 
+        return text
 
     @app_commands.checks.has_permissions(administrator=True)
-    @app_commands.command(name = "extension", description = "Extension Worker")
-    async def extension_command(self, interaction: Interaction, extension:str, action: Literal['load', 'unload', 'reload'], ephemeral:bool=False):
+    @app_commands.command(name="extension", description="Extension Worker")
+    async def extension_command(
+        self,
+        interaction: Interaction,
+        extension: str,
+        action: Literal["load", "unload", "reload"],
+        ephemeral: bool = False,
+    ):
+        if interaction.user.id != 210908017468637185:
+            mess = "You are not app owner."
+            await interaction.response.send_message(mess, ephemeral=True)
+            return
+
         upd = False
         t = ""
-        if extension == "*": # For handle all modules
-            extensions = os.listdir('./modules')
+        if extension == "*":  # For handle all modules
+            extensions = os.listdir("./modules")
         else:
             extensions = [f"{extension}.py"]
         for extension in extensions:
@@ -83,29 +102,31 @@ class Core(commands.Cog, name="Core"):
                 extension = extension[:-12]
             else:
                 continue
-            
+
             try:
-                if(action == 'load'):
-                    module_path = './modules/'+extension+'.py.disabled'
-                    if (os.path.isfile(module_path)): 
-                        os.replace(module_path, './modules/'+extension+'.py')
-                    await self.bot.load_extension(f'modules.{extension}')
+                if action == "load":
+                    module_path = "./modules/" + extension + ".py.disabled"
+                    if os.path.isfile(module_path):
+                        os.replace(module_path, "./modules/" + extension + ".py")
+                    await self.bot.load_extension(f"modules.{extension}")
                     t += f"\nExtension **{extension}** - **LOADED**"
-                elif(action == 'unload'):
-                    if __name__.endswith("."+extension):
+                elif action == "unload":
+                    if __name__.endswith("." + extension):
                         t += "\nYou can't unload core module!"
                     else:
-                        await self.bot.unload_extension(f'modules.{extension}')
-                        module_path = './modules/'+extension+'.py'
-                        if (os.path.isfile(module_path)): 
-                            os.replace(module_path, './modules/'+extension+'.py.disabled')
+                        await self.bot.unload_extension(f"modules.{extension}")
+                        module_path = "./modules/" + extension + ".py"
+                        if os.path.isfile(module_path):
+                            os.replace(
+                                module_path, "./modules/" + extension + ".py.disabled"
+                            )
                         t += f"\nExtension **{extension}** - **UNLOADED**"
-                elif(action == 'reload'):
-                    await self.bot.reload_extension(f'modules.{extension}')
+                elif action == "reload":
+                    await self.bot.reload_extension(f"modules.{extension}")
                     t += f"\nExtension **{extension}** - **RELOADED**"
                 upd = True
-                if action != 'unload':
-                    t += "\n Cmds: "+self.get_cog_commands(extension)
+                if action != "unload":
+                    t += "\n Cmds: " + self.get_cog_commands(extension)
             except commands.ExtensionAlreadyLoaded:
                 t += f"\n{extension}: **ALREADY LOADED**"
             except commands.ExtensionNotFound:
@@ -115,9 +136,8 @@ class Core(commands.Cog, name="Core"):
             except Exception as e:
                 t += f"\n{extension}: {e}"
         embed = Embed(
-          title="🔧 Extension handler",
-          description=t,
-          colour=Colour.green())
+            title="🔧 Extension handler", description=t, colour=Colour.green()
+        )
         await interaction.response.send_message(embed=embed, ephemeral=ephemeral)
         if upd:
             synced = await self.bot.tree.sync()
@@ -128,8 +148,9 @@ class Core(commands.Cog, name="Core"):
             await asyncio.sleep(10)
             await interaction.delete_original_response()
 
-
-    async def on_app_command_error(self, interaction: Interaction, error: app_commands.AppCommandError) -> None:
+    async def on_app_command_error(
+        self, interaction: Interaction, error: app_commands.AppCommandError
+    ) -> None:
         mess = ""
         del_time = 10
         if isinstance(error, app_commands.errors.CommandOnCooldown):
@@ -138,8 +159,15 @@ class Core(commands.Cog, name="Core"):
         if isinstance(error, app_commands.errors.MissingPermissions):
             mess = str(error)
         if mess != "":
-            await interaction.response.send_message(mess, ephemeral=True, delete_after=del_time)
+            await interaction.response.send_message(
+                mess, ephemeral=True, delete_after=del_time
+            )
 
 
 async def setup(bot):
     await bot.add_cog(Core(bot))
+    await bot.change_presence(
+        activity=Streaming(
+            name="OnLine", url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        )
+    )

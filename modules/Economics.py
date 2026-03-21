@@ -61,7 +61,7 @@ class Economics(commands.Cog, name="Economics"):
         self, interaction, member: Member, money: float, ephemeral: bool = True
     ):
         sender_money = self.economy.get_balance(interaction.user.id)
-        if (sender_money < money) or (money < 0):
+        if (sender_money < money) or (money <= 0):
             await interaction.response.send_message(
                 f"У вас недостаточно средств для отправки.", delete_after=10
             )

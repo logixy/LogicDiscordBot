@@ -21,13 +21,16 @@ class Youchat(commands.Cog, name="Youchat"):
             "python3",
             "modules/utils/youchat.py",
             "-t",
-            "12",
+            "25",
+            "-ot",
+            "json",
             btext,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
         stdout, stderr = await proc.communicate()
         # print(f'[{proc.returncode}]')
+        print(stdout.decode())
         text = json.loads(stdout.decode())
         # print("OUT: " + stdout.decode() + "   " + stderr.decode())
         # print(f'{stderr.decode()}')
@@ -79,6 +82,7 @@ class Youchat(commands.Cog, name="Youchat"):
                 gen_text[i : i + chunk_size]
                 for i in range(0, len(gen_text), chunk_size)
             ]
+            chunks = self.fix_markdown_blocks(chunks)
             for i, chunk in enumerate(chunks):
                 if i == 0:
                     await interaction.edit_original_response(
@@ -102,12 +106,22 @@ class Youchat(commands.Cog, name="Youchat"):
         if message.author.bot or not message.content:
             return
 
-        if message.mentions[0].id == self.bot.user.id:
+        #await message.channel.send(str(message.mentions[0].id) + " " + str(self.bot.user.id))
+        if not message.mentions:
+            return
+
+        if message.mentions[0].id in [self.bot.user.id, 473645373408411670, 1232770333296300053]:
             async with message.channel.typing():
+                # Обработка сообщения если оно было процитировано
+                context = ""
+                if message.reference:
+                    referenced_message = await message.channel.fetch_message(message.reference.message_id)
+                    if isinstance(referenced_message, Message):
+                        context = f"Context: \n{referenced_message.content}\n"
                 new_content = message.content
                 for mention in message.mentions:
                     new_content = new_content.replace(f'<@{mention.id}>', '')  # Удаляем упоминание
-                    new_content = f"Тебя зовут {self.bot.user.display_name}, ответь на сообщение от {message.author.display_name}: \n" + new_content
+                    new_content = f"{context} {message.author.display_name}: \n" + new_content
                 you_chat = asyncio.create_task(self.youchat_message(new_content))
                 text = await you_chat
                 if "generated_text" in text and text["generated_text"] != "":
@@ -117,6 +131,7 @@ class Youchat(commands.Cog, name="Youchat"):
                         gen_text[i : i + chunk_size]
                         for i in range(0, len(gen_text), chunk_size)
                     ]
+                    chunks = self.fix_markdown_blocks(chunks)
                     for i, chunk in enumerate(chunks):
                         await message.channel.send(chunk)
 
@@ -156,7 +171,7 @@ class Youchat(commands.Cog, name="Youchat"):
         except Exception as e:
             await interaction.edit_original_response(content=e)
         await interaction.edit_original_response(content="end phase #1")
-        t = "# Напиши краткую сводку диалога не более пяти предложений представленного ниже:\n"
+        t = "Напиши краткую сводку диалога не более пяти предложений представленного ниже. Дай свои рекомендации:\n"
         messages = messages[::-1]
         await interaction.edit_original_response(content="start phase #2")
         for message in messages:
@@ -246,6 +261,29 @@ class Youchat(commands.Cog, name="Youchat"):
                     loop += 1
                 start_dlg = current_time
                 await asyncio.sleep(0.1)
+
+    def fix_markdown_blocks(self, messages):
+        fixed_messages = []
+        inside_code_block = False  # Флаг, отслеживающий незакрытые блоки кода
+
+        for message in messages:
+            lines = message.split("\n")
+            open_code_block = False
+
+            for line in lines:
+                if line.strip().startswith("```"):
+                    open_code_block = not open_code_block  # Переключаем флаг
+
+            if open_code_block:
+                if inside_code_block:
+                    message = "```\n" + message  # Открываем новый блок
+                else:
+                    message += "\n```"  # Закрываем текущий блок
+                inside_code_block = not inside_code_block
+
+            fixed_messages.append(message)
+
+        return fixed_messages
 
 
 async def setup(bot):

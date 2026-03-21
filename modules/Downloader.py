@@ -109,7 +109,7 @@ class Downloader(commands.Cog, name="Downloader"):
                         "--progress",
                         "--newline",
                         "--embed-metadata",
-                        #"--cookies", # If use your cookies for downloader 
+                        #"--cookies", # If use your cookies for downloader
                         #"cookies.txt",
                         "--output",
                         f"{tmp_dir}/{r_filename}.{ext}",
@@ -128,7 +128,7 @@ class Downloader(commands.Cog, name="Downloader"):
                         "--progress",
                         "--newline",
                         "--embed-metadata",
-                        #"--cookies", # If use your cookies for downloader 
+                        #"--cookies", # If use your cookies for downloader
                         #"cookies.txt",
                         "--output",
                         f"{tmp_dir}/{r_filename}.{ext}",

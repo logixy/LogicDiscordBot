@@ -1,6 +1,7 @@
 import asyncio
 import random
 from collections import Counter
+from typing import Literal, Optional, Tuple
 from urllib.parse import urlparse
 from discord.ext import commands
 from discord import app_commands, Embed, Colour, Interaction, Message
@@ -26,6 +27,29 @@ class Randstuff(commands.Cog, name="Randstuff"):
         self.embed.title = "Факт"
         self.embed.description = self.get_fact()
         await interraction.response.send_message(embed=self.embed)
+
+    @app_commands.command(name="saying", description="Случайная мудрость (randstuff.ru)")
+    async def saying_command(self, interaction: Interaction):
+        text, author = self.get_saying()
+        self.embed.title = "Мудрость"
+        self.embed.description = text
+        if author:
+            self.embed.set_footer(text=author)
+        else:
+            self.embed.remove_footer()
+        await interaction.response.send_message(embed=self.embed)
+        self.embed.remove_footer()
+
+    @app_commands.command(name="compliment", description="Случайный комплимент (randstuff.ru)")
+    @app_commands.describe(for_whom="Для кого: она (her) или он (him)")
+    async def compliment_command(
+        self,
+        interaction: Interaction,
+        for_whom: Literal["her", "him"],
+    ):
+        self.embed.title = "Комплимент"
+        self.embed.description = self.get_compliment(for_whom)
+        await interaction.response.send_message(embed=self.embed)
     
     @app_commands.command(name="where", description="Where?")
     async def where_command(self, interraction: Interaction):
@@ -46,8 +70,8 @@ class Randstuff(commands.Cog, name="Randstuff"):
            "Вычисляем вычисления...", "Спрашиваем мимопроходящих...",
            "Завём тётю Галю...", "Делаем серьёзный вид..."])
         await interaction.response.send_message(embed=self.embed)
-        asyncio.sleep(3)
-        newNick = self.get_rand_nickname()
+        await asyncio.sleep(3)
+        newNick = self.get_rand_nickname(interaction.user.id)
         try:
             await interaction.user.edit(nick=newNick)
         except:
@@ -104,6 +128,27 @@ class Randstuff(commands.Cog, name="Randstuff"):
         else:
             return data['fact']['text']
 
+    def get_saying(self) -> Tuple[str, Optional[str]]:
+        data = webhandler.get_json('https://randstuff.ru/saying/generate/')
+        if not data or 'saying' not in data:
+            return ('API Error: ' + webhandler.req_error, None)
+        s = data['saying']
+        text = s['text']
+        author = (s.get('author') or '').strip() or None
+        return (text, author)
+
+    def get_compliment(self, for_whom: str) -> str:
+        """for_whom: 'her' или 'him' — поле формы API randstuff.ru."""
+        data = webhandler.post_json_data(
+            'https://randstuff.ru/compliment/generate/',
+            {'for': for_whom},
+        )
+        if not data or 'compliment' not in data:
+            return 'API Error: ' + webhandler.req_error
+        value = data['compliment']['value']
+        prefix = 'Ты самая' if for_whom == 'her' else 'Ты самый'
+        return f'{prefix} {value}.'
+
     def get_where(self) -> str:
         data = webhandler.get_json('https://randstuff.ru/city/generate/')
         if('city' not in data):
@@ -115,13 +160,9 @@ class Randstuff(commands.Cog, name="Randstuff"):
         lines = list(open('modules/randstuff/questions.txt', encoding="utf8"))
         return random.choice(lines)
     
-    def get_rand_nickname(self) -> str:
-        if random.choice([True, False]):
-            return self.gen_rand_word(2).title() + " " + \
-                self.gen_rand_word(1).title()
-        else:
-            randNicks = webhandler.post_json('https://plarium.com/services/api/nicknames/new/create?group=2&gender=2')
-            return random.choice(randNicks)
+    def get_rand_nickname(self, id = 0) -> str:
+        return self.gen_rand_word(2).title() + " " + \
+            self.gen_rand_word(1).title()
         
     def gen_rand_word(self, type):  # type 2 - adjective (прилагать.) 1 - noun (сущ.)
         if(type == 2):
@@ -141,7 +182,8 @@ class Randstuff(commands.Cog, name="Randstuff"):
 
         if len(message_text)/100*50 < mc_e[1] and len(message_text) > 3:
             sta = mc_e[0] * random.randint(10, 30)
-            await message.reply(self.upper_case_random_chars(sta))
+            aaa_messages = [self.upper_case_random_chars(sta), mc_e[0], '🧱', '🪗', 'себе по'+mc_e[0]+'кай', 'out of bounds', 'перест'+self.upper_case_random_chars(sta)+'нь']
+            await message.reply(random.choice(aaa_messages))
 
         if lowered_message in ['бип', 'боп', 'буп']:
             await message.reply(random.choice(['Бип', 'Боп', 'Буп', 'null', 'undefined', 'out of bounds', 'себе по'+lowered_message+'ай', \
@@ -190,7 +232,7 @@ class Randstuff(commands.Cog, name="Randstuff"):
                 await message.channel.send('Данную команду можно использовать только на сервере!')
                 return
             await message.channel.send('Печатаем новый паспорт...')
-            newNick = self.get_rand_nickname()
+            newNick = self.get_rand_nickname(message.author.id)
             try:
                 await message.author.edit(nick=newNick)
             except:
